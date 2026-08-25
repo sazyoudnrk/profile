@@ -1,1 +1,603 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#00A9E0">
+<meta name="color-scheme" content="light">
+<style>:root{color-scheme:light}</style>
+<title>砂上電力</title>
+<style>
+:root{
+  --navy:#1A2F6E;
+  --blue:#00A9E0;
+  --sky:#7EE8FA;
+  --sky-pale:#E0F9FF;
+  --paper:#00A9E0;
+  --yellow:#FFB800;
+  --yellow-deep:#E09E00;
+  --shadow:rgba(26,47,110,.22);
+
+  --ui:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --label:"Avenir Next Condensed","Helvetica Neue",Arial,sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background-color:#00A9E0 !important}
+html,body{height:100%;background-color:var(--paper)}
+body{
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(var(--yellow) 2.2px,transparent 2.2px),
+    radial-gradient(var(--yellow) 2.2px,transparent 2.2px);
+  background-size:28px 28px,28px 28px;
+  background-position:0 0,14px 14px;
+  color:var(--navy);
+  font-family:var(--ui);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+  opacity:1;transition:opacity .22s ease;
+}
+body.is-leaving{opacity:0}
+img{display:block;user-select:none;-webkit-user-drag:none}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+#app{max-width:520px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 32px);}
+
+.site-name{
+  font-family:var(--label);font-size:26px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--yellow);padding:4px 0 14px 4px;
+  -webkit-text-stroke:3px #fff;
+  paint-order:stroke fill;
+  text-shadow:
+    -2px -2px 0 #fff, 0 -2px 0 #fff, 2px -2px 0 #fff,
+    -2px  0   0 #fff,                 2px  0   0 #fff,
+    -2px  2px 0 #fff, 0  2px 0 #fff, 2px  2px 0 #fff;
+}
+.site-name b{color:var(--yellow)}
+
+.card{
+  position:relative;background:#fff;
+  border:2px solid var(--navy);
+  border-radius:26px 22px 28px 20px;
+  box-shadow:5px 6px 0 var(--shadow);
+}
+
+/* ===== トップのステージ ===== */
+#stage{position:relative;aspect-ratio:3/5;min-height:520px;overflow:hidden}
+#stage::before{ /* 淡い光 */
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 45%,rgba(126,232,250,.35),transparent 62%);
+}
+#character{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  touch-action:manipulation;
+  /* 横幅は CONFIG.charWidthRatio (JS側) で指定 */
+}
+#character .sprite{width:100%}
+#character::after{
+  content:"";position:absolute;left:50%;bottom:2%;width:48%;height:10px;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse at center,rgba(26,47,110,.13),transparent 70%);
+}
+
+.sprite{position:relative;width:100%}
+.sprite .stack{display:none}
+.sprite .stack.active{display:block}
+.sprite .stack img{width:100%;height:auto;position:absolute;left:0;top:0;visibility:hidden}
+.sprite .stack img:first-child{position:relative}
+.sprite .stack img.on{visibility:visible}
+
+.icon{
+  position:absolute;transform:translate(-50%,-50%);
+  width:76px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  touch-action:manipulation;
+}
+.icon .art{
+  width:60px;height:60px;
+  border:2px solid var(--navy);border-radius:16px 14px 17px 13px;
+  background:#fff;box-shadow:3px 3px 0 var(--sky);
+  overflow:hidden;display:grid;place-items:center;
+  transition:transform .1s ease,box-shadow .1s ease,background .1s ease;
+}
+.icon:active .art{transform:translate(3px,3px);box-shadow:0 0 0 var(--sky);background:var(--yellow)}
+.icon .art .sprite{width:100%}
+.icon .cap{
+  font-family:var(--label);font-size:26px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  text-align:center;line-height:1.1;white-space:nowrap;
+  color:var(--navy);
+  text-shadow:2px 2px 0 rgba(255,255,255,.7);
+}
+
+/* ===== 他のリンク ===== */
+#links{margin-top:22px;padding:18px 16px 20px}
+#links h2{font-family:var(--label);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:12px}
+#links h2 span{display:block;font-family:var(--ui);font-size:11px;letter-spacing:.04em;
+  text-transform:none;color:var(--navy);opacity:.65;margin-top:2px}
+.link-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.link-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:13px 15px;border:2px solid var(--navy);
+  border-radius:14px 12px 15px 11px;background:#fff;
+  box-shadow:3px 3px 0 var(--sky);text-align:left;
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+.link-item:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--sky)}
+.link-item .t{font-size:15px;font-weight:600}
+.link-item .n{font-family:var(--label);font-size:11px;letter-spacing:.1em;color:var(--blue);opacity:.7}
+
+.credit{margin-top:26px;text-align:center;font-family:var(--label);
+  font-size:11px;letter-spacing:.18em;color:#fff;opacity:.9;
+  text-shadow:0 1px 2px rgba(26,47,110,.4)}
+
+/* ===== ギャルゲ構図のシーン ===== */
+#scene[hidden]{display:none}
+#scene{
+  position:fixed;inset:0;z-index:60;
+  background:linear-gradient(180deg,#00A9E0 0%,#7EE8FA 50%,#FFE9A8 100%);
+  overflow:hidden;
+  animation:sceneIn .16s ease;
+}
+@keyframes sceneIn{from{opacity:0}to{opacity:1}}
+
+#burst{ /* 近づく勢いを出す同心円 */
+  position:absolute;left:50%;top:42%;width:150vmax;height:150vmax;
+  transform:translate(-50%,-50%) scale(.4);
+  opacity:0;
+  background:repeating-radial-gradient(circle,rgba(255,184,0,.55) 0 3px,transparent 3px 26px);
+  transition:transform .6s cubic-bezier(.2,.8,.3,1),opacity .6s ease;
+  pointer-events:none;
+}
+#scene.is-in #burst{transform:translate(-50%,-50%) scale(1);opacity:.5}
+
+#figure{
+  position:absolute;left:50%;bottom:31%;
+  transform:translateX(-50%);
+  width:min(94vw,430px);
+  filter:drop-shadow(0 10px 0 rgba(26,47,110,.12));
+}
+#figure .sprite{width:100%}
+
+/* ADVテキストボックス */
+#advbox{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:0 14px calc(env(safe-area-inset-bottom) + 16px);
+  transform:translateY(18px);opacity:0;
+  transition:transform .26s cubic-bezier(.2,1.3,.5,1),opacity .26s ease;
+  pointer-events:none;
+}
+#advbox.show{transform:none;opacity:1;pointer-events:auto}
+.adv-inner{
+  position:relative;
+  background:rgba(255,255,255,.94);
+  border:3px solid var(--navy);
+  border-radius:20px 16px 22px 18px;
+  box-shadow:0 6px 0 var(--navy),0 14px 26px rgba(26,47,110,.28);
+  padding:22px 18px 18px;
+}
+.nameplate{
+  position:absolute;top:-17px;left:16px;
+  background:var(--yellow);
+  border:3px solid var(--navy);
+  border-radius:12px 10px 13px 9px;
+  padding:3px 14px;
+  font-size:13px;font-weight:700;letter-spacing:.06em;
+  box-shadow:0 3px 0 var(--navy);
+}
+.adv-text{font-size:17px;line-height:1.7;min-height:3.4em;letter-spacing:.02em}
+.adv-text .caret{
+  display:inline-block;width:.55em;height:.55em;margin-left:.25em;
+  background:var(--blue);border-radius:2px;
+  animation:blink .7s steps(2,end) infinite;vertical-align:middle;
+}
+@keyframes blink{50%{opacity:0}}
+.choices{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.choice{
+  width:100%;padding:14px 12px;
+  border:3px solid var(--navy);border-radius:14px 11px 15px 12px;
+  background:var(--blue);color:#fff;font-weight:700;font-size:15px;
+  box-shadow:0 4px 0 var(--navy);
+  transition:transform .1s ease,box-shadow .1s ease;
+}
+.choice.sub{background:#fff;color:var(--navy)}
+.choice.sub:active,.choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--navy)}
+
+#back{
+  position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;z-index:2;
+  width:44px;height:44px;border-radius:50%;
+  border:3px solid var(--navy);background:#fff;
+  box-shadow:0 3px 0 var(--navy);
+  font-family:var(--label);font-size:17px;font-weight:700;line-height:1;
+}
+#back:active{transform:translateY(3px);box-shadow:none}
+
+:focus-visible{outline:3px solid var(--yellow-deep);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body style="background-color:#00A9E0">
+
+<div id="app">
+  <div class="site-name" id="siteName"></div>
+  <main class="card" id="stage" aria-label="キャラクターとリンク"></main>
+  <section class="card" id="links">
+    <h2>OTHER LINKS<span>他のリンク</span></h2>
+    <ul class="link-list" id="linkList"></ul>
+  </section>
+  <div class="credit" id="credit"></div>
+</div>
+
+<div id="scene" hidden>
+  <div id="burst"></div>
+  <button id="back" aria-label="もどる">×</button>
+  <div id="figure"></div>
+  <div id="advbox">
+    <div class="adv-inner">
+      <div class="nameplate" id="advName"></div>
+      <div class="adv-text" id="advText"></div>
+      <div class="choices" id="advChoices"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =======================================================================
+   仮素材ジェネレーター（自分の絵に差し替えたら、この <script> ごと削除OK）
+   ======================================================================= */
+window.PH = (function(){
+  const N="#1A2F6E", S="#7EE8FA", Y="#FFB800";
+  const svg=(inner,w,h)=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+w+' '+h+'">'+inner+'</svg>');
+
+  /* 全身。eye:0=開 1=閉, arm:腕の振り, mouth:0=閉 1=開 */
+  function figure(eye,arm,mouth){
+    return ''+
+    '<g fill="none" stroke="'+N+'" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">'+
+      '<path d="M70 132 L100 118 L130 132 L136 210 L64 210 Z" fill="'+S+'" fill-opacity=".45"/>'+
+      '<path d="M70 136 l-16 '+(46+arm)+'" /><path d="M130 136 l16 '+(46-arm)+'" />'+
+      '<path d="M84 210 l-4 62" /><path d="M116 210 l4 62" />'+
+      '<circle cx="100" cy="72" r="40" fill="#fff"/>'+
+      '<path d="M62 66q6-40 38-40t38 40" fill="'+S+'" fill-opacity=".7"/>'+
+      '<path d="M100 112 v8"/>'+
+      (eye
+        ? '<path d="M78 76q6 5 12 0"/><path d="M110 76q6 5 12 0"/>'
+        : '<ellipse cx="84" cy="76" rx="5.5" ry="9" fill="'+N+'"/><ellipse cx="116" cy="76" rx="5.5" ry="9" fill="'+N+'"/>')+
+      (mouth
+        ? '<path d="M94 94q6 9 12 0q-6 4-12 0z" fill="'+N+'"/>'
+        : '<path d="M95 94q5 4 10 0"/>')+
+      '<circle cx="74" cy="90" r="4.5" fill="'+Y+'" stroke="none" opacity=".8"/>'+
+      '<circle cx="126" cy="90" r="4.5" fill="'+Y+'" stroke="none" opacity=".8"/>'+
+    '</g>';
+  }
+
+  /* 拡大率と位置を変えて「近づく」を表現 */
+  function shot(scale,cy,eye,arm,mouth){
+    return svg('<g transform="translate(100 '+cy+') scale('+scale+') translate(-100 -72)">'
+      + figure(eye,arm,mouth) + '</g>', 200, 300);
+  }
+
+  return {
+    idle:  i => shot(0.78, 96, 0, [10,-4,4][i], 0),          // トップの待機3コマ
+    walk:  i => [shot(0.7,90,0,12,0), shot(1.15,120,0,-6,0), shot(1.9,168,0,2,1)][i], // 近づく3コマ
+    bust:  i => shot(1.9, 168, [0,1,0][i], 2, [1,0,1][i]),   // 近づいた後の待機ループ
+    icon:  t => svg('<rect x="14" y="14" width="72" height="72" rx="16" fill="'+S+'" fill-opacity=".2" stroke="'+N+'" stroke-width="4"/>'+
+      '<text x="50" y="58" font-family="Helvetica,Arial" font-size="'+(t.length>4?13:17)+'" font-weight="bold" fill="'+N+'" text-anchor="middle">'+t+'</text>',100,100)
+  };
+})();
+
+/* =======================================================================
+   ここから下の SITE を編集すれば中身を差し替えられます。
+
+   画像は 相対パス "img/xxx.png" でも データURI "data:image/png;base64,..." でもOK。
+   フレームは3枚の配列。1枚だけなら文字列でも動きます。
+   ======================================================================= */
+
+const CONFIG = {
+  frameInterval: 200,   // 待機・接近アニメの1コマ(ms)
+  bustInterval:  420,   // 近づいた後の待機ループの1コマ(ms)
+  typeSpeed:     30,    // セリフの表示速度(1文字ms) 0で一気に表示
+  fadeOutOnLeave:true,
+
+  /* ステージ(縦長 5:7)内のレイアウト。数値はステージ幅/高さに対する比率 */
+  charWidthRatio: 0.85,          // トップキャラの横幅(ステージ幅比) ※絵の縦横比に応じて調整
+  iconLayout: { startAngle:-112.5, radiusX:0.42, radiusY:0.42 } // 半径を広げて外側に配置
+};
+
+const SITE = {
+  name: "SAZYOU <b>DENRYOKU</b>",
+  credit: "ILLUSTRATION & CODE — @sazyou_dnrk",
+
+  character: {
+    /* ↓ 動作確認用にGitHubのraw URLを直参照。公開時は "assets/char/idle_1.png" 形式の相対パスに戻す */
+    idle: [
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/idle_1.png",
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/idle_2.png",
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/idle_3.png"
+    ],
+    walk: [PH.walk(0), PH.walk(1), PH.walk(2)],   // 近づいてくる3コマ（全シーン共通）
+    bust: [PH.bust(0), PH.bust(1), PH.bust(2)],   // 近づいた後のループ
+    action: { type:"scene", scene:"aboutMe" }     // キャラをさわった時
+  },
+
+  icons: [
+    { id:"home",    label:"HOME PAGE", art:PH.icon("HOME"),  action:{ type:"scene", scene:"home" } },
+    { id:"skeb",    label:"skeb",      art:PH.icon("SKEB"),  action:{ type:"scene", scene:"skeb" } },
+    { id:"youtube", label:"YouTube",   art:PH.icon("TUBE"),  action:{ type:"scene", scene:"youtube" } },
+    { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:you@example.com" } },
+    { id:"pixiv",   label:"pixiv",     art:PH.icon("PIXIV"), action:{ type:"scene", scene:"pixiv" } },
+    { id:"x",       label:"X",         art:PH.icon("X"),     action:{ type:"scene", scene:"x" } },
+    { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
+    { id:"note",    label:"note",      art:PH.icon("NOTE"),  action:{ type:"scene", scene:"note" } }
+    // 8個は上限目安。これ以上増える分は「他のリンク」欄に流すのがおすすめ
+  ],
+
+  otherLinks: [
+    { label:"作品まとめ", note:"portfolio", url:"https://example.com/works" },
+    { label:"お問い合わせ", note:"contact form", url:"https://example.com/contact" }
+    // アイコンにしなかった細かいリンクはここに追加
+  ],
+
+  /* 近づいたあとの会話シーン。walk/bust を書かなければ character のものを使います */
+  scenes: {
+    aboutMe: {
+      name:"???",
+      text:"私のことがしりたいの？",
+      choices:[
+        { label:"マシュマロを送る",   url:"https://marshmallow-qa.com/xxxxx" },
+        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true }
+      ]
+    },
+    home: {
+      name:"???",
+      text:"こっちが本家のサイト。ちゃんと見ていってね。",
+      choices:[ { label:"ホームページへ", url:"https://example.com" } ]
+    },
+    skeb: {
+      name:"???",
+      text:"このサイトに飛ぶ？　リクエスト、待ってるよ。",
+      choices:[ { label:"skeb.com へ", url:"https://skeb.jp/@yourname" } ]
+    },
+    youtube: {
+      name:"???",
+      text:"動画も置いてるよ。ひまなら見てって。",
+      choices:[ { label:"YouTube へ", url:"https://youtube.com/@yourchannel" } ]
+    },
+    pixiv: {
+      name:"???",
+      text:"描いたやつ、こっちに置いてるよ。",
+      choices:[ { label:"pixiv へ", url:"https://pixiv.net/users/000000" } ]
+    },
+    x: {
+      name:"???",
+      text:"つぶやきはこっち。よかったらフォローしてね。",
+      choices:[ { label:"X へ", url:"https://x.com/sazyou_dnrk" } ]
+    },
+    booth: {
+      name:"???",
+      text:"グッズとかも作ってるから、覗いてって。",
+      choices:[ { label:"BOOTH へ", url:"https://booth.pm" } ]
+    },
+    note: {
+      name:"???",
+      text:"制作の話とか、たまに書いてる。",
+      choices:[ { label:"note へ", url:"https://note.com/yourname" } ]
+    }
+  }
+};
+
+/* ================= ここから下はエンジン。基本さわらなくてOK ================= */
+
+const $ = (s,r=document)=>r.querySelector(s);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let busy = false;
+
+function makeSprite(sets){
+  const root = document.createElement("div");
+  root.className = "sprite";
+  const stacks = {};
+  for(const key in sets){
+    const frames = [].concat(sets[key] || []);
+    if(!frames.length) continue;
+    const stack = document.createElement("div");
+    stack.className = "stack";
+    frames.forEach((src,i)=>{
+      const img = document.createElement("img");
+      img.src = src; img.alt = ""; img.decoding = "async";
+      if(i === 0) img.classList.add("on");
+      stack.appendChild(img);
+    });
+    root.appendChild(stack);
+    stacks[key] = stack;
+  }
+  let timer = null;
+  const show = (stack,i)=>{
+    for(let k=0;k<stack.children.length;k++) stack.children[k].classList.toggle("on", k===i);
+  };
+  const stop = ()=>{ if(timer){ clearInterval(timer); timer=null; } };
+  return {
+    el: root,
+    has: k => !!stacks[k],
+    stop,
+    play(key, opt){
+      opt = opt || {};
+      const stack = stacks[key];
+      if(!stack){ opt.done && opt.done(); return; }
+      stop();
+      for(const k in stacks) stacks[k].classList.toggle("active", k===key);
+      const n = stack.children.length;
+      const interval = opt.interval || CONFIG.frameInterval;
+      show(stack,0);
+      if(n < 2){ if(!opt.loop) setTimeout(()=>opt.done && opt.done(), interval); return; }
+      let i = 0;
+      timer = setInterval(()=>{
+        i++;
+        if(i >= n){
+          if(opt.loop) i = 0;
+          else { stop(); show(stack,n-1); opt.done && opt.done(); return; }
+        }
+        show(stack,i);
+      }, interval);
+    }
+  };
+}
+
+function goto(url){
+  if(!url) return;
+  if(url.indexOf("mailto:") === 0 || !CONFIG.fadeOutOnLeave){ location.href = url; return; }
+  document.body.classList.add("is-leaving");
+  setTimeout(()=>{ location.href = url; }, 220);
+}
+addEventListener("pageshow", ()=>{ document.body.classList.remove("is-leaving"); busy = false; });
+
+function runAction(action){
+  if(!action) return;
+  if(action.type === "scene") return openScene(action.scene);
+  if(action.type === "link")  return goto(action.url);
+}
+
+/* ---- トップのキャラ ---- */
+const stage = $("#stage");
+const charBtn = document.createElement("button");
+charBtn.id = "character";
+charBtn.setAttribute("aria-label","キャラクターにさわる");
+const charSprite = makeSprite({ idle: SITE.character.idle });
+charBtn.appendChild(charSprite.el);
+charBtn.style.width = (CONFIG.charWidthRatio * 100) + "%";
+stage.appendChild(charBtn);
+charSprite.play("idle", { loop:true });
+charBtn.addEventListener("click", ()=>{ if(!busy) runAction(SITE.character.action); });
+
+/* ---- アイコン（円周配置） ---- */
+SITE.icons.forEach((icon,i)=>{
+  const n = SITE.icons.length;
+  const L = CONFIG.iconLayout;
+  const rad = (L.startAngle + (360/n)*i) * Math.PI/180;
+  const btn = document.createElement("button");
+  btn.className = "icon";
+  btn.style.left = (50 + L.radiusX * Math.cos(rad) * 100) + "%";
+  btn.style.top  = (50 + L.radiusY * Math.sin(rad) * 100) + "%";
+  btn.setAttribute("aria-label", icon.label);
+  const art = document.createElement("div");
+  art.className = "art";
+  const img = document.createElement("img");
+  img.src = icon.art; img.alt = "";
+  art.appendChild(img);
+  const cap = document.createElement("span");
+  cap.className = "cap";
+  cap.textContent = icon.label;
+  btn.append(art, cap);
+  stage.appendChild(btn);
+  btn.addEventListener("click", ()=>{ if(!busy) runAction(icon.action); });
+});
+
+/* ---- 他のリンク ---- */
+const list = $("#linkList");
+SITE.otherLinks.forEach(l=>{
+  const li = document.createElement("li");
+  const b = document.createElement("button");
+  b.className = "link-item";
+  b.innerHTML = '<span class="t"></span><span class="n"></span>';
+  b.querySelector(".t").textContent = l.label;
+  b.querySelector(".n").textContent = l.note || "";
+  b.addEventListener("click", ()=>goto(l.url));
+  li.appendChild(b);
+  list.appendChild(li);
+});
+
+/* ---- シーン（接近 → ギャルゲ構図） ---- */
+const scene   = $("#scene");
+const figure  = $("#figure");
+const advbox  = $("#advbox");
+const advName = $("#advName");
+const advText = $("#advText");
+const advCho  = $("#advChoices");
+let sceneSprite = null, typeTimer = null;
+
+function openScene(key){
+  const sc = SITE.scenes[key];
+  if(!sc) return;
+  busy = true;
+
+  const walk = sc.walk || SITE.character.walk;
+  const bust = sc.bust || SITE.character.bust;
+
+  figure.innerHTML = "";
+  sceneSprite = makeSprite({ walk, bust });
+  figure.appendChild(sceneSprite.el);
+
+  advbox.classList.remove("show");
+  advText.textContent = "";
+  advCho.innerHTML = "";
+  advName.textContent = sc.name || "";
+  scene.hidden = false;
+  requestAnimationFrame(()=>scene.classList.add("is-in"));
+
+  sceneSprite.play("walk", { done:()=>{
+    sceneSprite.play("bust", { loop:true, interval:CONFIG.bustInterval });
+    advbox.classList.add("show");
+    typeLine(sc.text, ()=>{ renderChoices(sc); busy = false; });
+  }});
+}
+
+function typeLine(text, done){
+  clearInterval(typeTimer);
+  if(reduced || !CONFIG.typeSpeed){ advText.textContent = text; done(); return; }
+  let i = 0;
+  const caret = '<span class="caret"></span>';
+  typeTimer = setInterval(()=>{
+    i++;
+    advText.innerHTML = escapeHTML(text.slice(0,i)) + (i < text.length ? caret : "");
+    if(i >= text.length){ clearInterval(typeTimer); done(); }
+  }, CONFIG.typeSpeed);
+}
+function escapeHTML(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function renderChoices(sc){
+  advCho.innerHTML = "";
+  (sc.choices || []).forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "choice" + (c.sub ? " sub" : "");
+    b.textContent = c.label;
+    b.addEventListener("click", ()=>{
+      if(c.scene){ closeScene(); setTimeout(()=>openScene(c.scene), 60); }
+      else goto(c.url);
+    });
+    advCho.appendChild(b);
+  });
+}
+
+function closeScene(){
+  clearInterval(typeTimer);
+  if(sceneSprite){ sceneSprite.stop(); sceneSprite = null; }
+  scene.classList.remove("is-in");
+  scene.hidden = true;
+  advbox.classList.remove("show");
+  figure.innerHTML = "";
+  busy = false;
+}
+$("#back").addEventListener("click", closeScene);
+addEventListener("keydown", e=>{ if(e.key === "Escape" && !scene.hidden) closeScene(); });
+
+/* ---- 文字まわり・先読み ---- */
+$("#siteName").innerHTML = SITE.name;
+$("#credit").textContent = SITE.credit;
+
+(function preload(){
+  const urls = [];
+  const dig = v => {
+    if(typeof v === "string" && (v.indexOf("data:") === 0 || /\.(png|gif|jpe?g|webp|svg)$/i.test(v))) urls.push(v);
+    else if(Array.isArray(v)) v.forEach(dig);
+    else if(v && typeof v === "object") Object.values(v).forEach(dig);
+  };
+  dig(SITE);
+  urls.forEach(u => { const im = new Image(); im.src = u; });
+})();
+</script>
+</body>
+</html>

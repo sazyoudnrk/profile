@@ -73,9 +73,17 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 #character{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  touch-action:manipulation;
+  touch-action:manipulation;z-index:1;
   /* 横幅は CONFIG.charWidthRatio (JS側) で指定 */
+  transition:width .55s cubic-bezier(.3,.9,.4,1), top .55s cubic-bezier(.3,.9,.4,1);
 }
+/* シーン中はキャラが手前に寄る（幅と位置は JS が --scene-w / --scene-top で渡す） */
+#stage.is-scene #character{
+  width:var(--scene-w) !important;
+  top:var(--scene-top);
+  pointer-events:none;
+}
+#stage.is-scene #character::after{opacity:0}
 #character .sprite{width:100%}
 #character::after{
   content:"";position:absolute;left:50%;bottom:2%;width:48%;height:10px;
@@ -91,7 +99,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .sprite .stack img.on{visibility:visible}
 
 .icon{
-  position:absolute;transform:translate(-50%,-50%);
+  position:absolute;transform:translate(-50%,-50%);z-index:2;
   width:96px;
   touch-action:manipulation;
 }
@@ -141,19 +149,19 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 .app-item:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--sky)}
 .app-item .thumb{
-  aspect-ratio:16/10;width:100%;
+  aspect-ratio:1/1;width:100%;
   background:var(--sky);
   border-bottom:2px solid var(--navy);
   display:grid;place-items:center;overflow:hidden;
 }
 .app-item .thumb img{width:100%;height:100%;object-fit:cover}
 .app-item .thumb .ph{
-  font-family:var(--label);font-size:26px;font-weight:800;
+  font-family:var(--label);font-size:20px;font-weight:800;
   color:var(--navy);opacity:.5;
 }
-.app-item .body{padding:9px 10px 11px}
-.app-item .t{display:block;font-size:14px;font-weight:700;line-height:1.25}
-.app-item .n{display:block;font-size:11px;line-height:1.35;color:var(--navy);opacity:.6;margin-top:3px}
+.app-item .body{padding:7px 7px 9px}
+.app-item .t{display:block;font-size:12px;font-weight:700;line-height:1.25}
+.app-item .n{display:block;font-size:10px;line-height:1.3;color:var(--navy);opacity:.6;margin-top:2px}
 .link-list{list-style:none;display:flex;flex-direction:column;gap:9px}
 .link-item{
   display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
@@ -170,38 +178,28 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   font-size:11px;letter-spacing:.18em;color:#fff;opacity:.9;
   text-shadow:0 1px 2px rgba(26,47,110,.4)}
 
-/* ===== ギャルゲ構図のシーン ===== */
-#scene[hidden]{display:none}
-#scene{
-  position:fixed;inset:0;z-index:60;
-  background:linear-gradient(180deg,#00A9E0 0%,#7EE8FA 50%,#FFE9A8 100%);
-  overflow:hidden;
-  animation:sceneIn .16s ease;
-}
-@keyframes sceneIn{from{opacity:0}to{opacity:1}}
+/* ===== ギャルゲ構図のシーン（ステージ内でそのまま展開する） ===== */
+#stage.is-scene{background:linear-gradient(180deg,#DFF6FF 0%,#EFFAFF 55%,#FFF6DC 100%)}
+
+/* シーンに入るとアイコンはフェードアウトして消える */
+.icon{transition:opacity .22s ease}
+#stage.is-scene .icon{opacity:0;pointer-events:none}
 
 #burst{ /* 近づく勢いを出す同心円 */
-  position:absolute;left:50%;top:42%;width:150vmax;height:150vmax;
-  transform:translate(-50%,-50%) scale(.4);
+  position:absolute;left:50%;top:44%;z-index:0;
+  width:220%;aspect-ratio:1/1;
+  transform:translate(-50%,-50%) scale(.35);
   opacity:0;
-  background:repeating-radial-gradient(circle,rgba(255,184,0,.55) 0 3px,transparent 3px 26px);
+  background:repeating-radial-gradient(circle,rgba(255,184,0,.5) 0 3px,transparent 3px 26px);
   transition:transform .6s cubic-bezier(.2,.8,.3,1),opacity .6s ease;
   pointer-events:none;
 }
-#scene.is-in #burst{transform:translate(-50%,-50%) scale(1);opacity:.5}
+#stage.is-scene #burst{transform:translate(-50%,-50%) scale(1);opacity:.45}
 
-#figure{
-  position:absolute;left:50%;bottom:31%;
-  transform:translateX(-50%);
-  width:min(94vw,430px);
-  filter:drop-shadow(0 10px 0 rgba(26,47,110,.12));
-}
-#figure .sprite{width:100%}
-
-/* ADVテキストボックス */
+/* ADVテキストボックス（ステージ下部に出る） */
 #advbox{
-  position:absolute;left:0;right:0;bottom:0;
-  padding:0 14px calc(env(safe-area-inset-bottom) + 16px);
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  padding:0 12px 14px;
   transform:translateY(18px);opacity:0;
   transition:transform .26s cubic-bezier(.2,1.3,.5,1),opacity .26s ease;
   pointer-events:none;
@@ -243,12 +241,14 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .choice.sub:active,.choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--navy)}
 
 #back{
-  position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;z-index:2;
-  width:44px;height:44px;border-radius:50%;
+  position:absolute;top:12px;right:12px;z-index:6;
+  width:42px;height:42px;border-radius:50%;
   border:3px solid var(--navy);background:#fff;
   box-shadow:0 3px 0 var(--navy);
   font-family:var(--label);font-size:17px;font-weight:700;line-height:1;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
 }
+#stage.is-scene #back{opacity:1;pointer-events:auto}
 #back:active{transform:translateY(3px);box-shadow:none}
 
 :focus-visible{outline:3px solid var(--yellow-deep);outline-offset:3px;border-radius:6px}
@@ -261,7 +261,17 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 <div id="app">
   <div class="site-name" id="siteName"></div>
-  <main class="card" id="stage" aria-label="キャラクターとリンク"></main>
+  <main class="card" id="stage" aria-label="キャラクターとリンク">
+    <div id="burst"></div>
+    <button id="back" aria-label="もどる">×</button>
+    <div id="advbox">
+      <div class="adv-inner">
+        <div class="nameplate" id="advName"></div>
+        <div class="adv-text" id="advText"></div>
+        <div class="choices" id="advChoices"></div>
+      </div>
+    </div>
+  </main>
   <section class="card" id="apps">
     <h2>WEB APPS<span>つくったもの</span></h2>
     <div class="app-grid" id="appList"></div>
@@ -273,18 +283,6 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   <div class="credit" id="credit"></div>
 </div>
 
-<div id="scene" hidden>
-  <div id="burst"></div>
-  <button id="back" aria-label="もどる">×</button>
-  <div id="figure"></div>
-  <div id="advbox">
-    <div class="adv-inner">
-      <div class="nameplate" id="advName"></div>
-      <div class="adv-text" id="advText"></div>
-      <div class="choices" id="advChoices"></div>
-    </div>
-  </div>
-</div>
 
 <script>
 /* =======================================================================
@@ -344,6 +342,12 @@ const CONFIG = {
   bustInterval:  420,   // 近づいた後の待機ループの1コマ(ms)
   typeSpeed:     30,    // セリフの表示速度(1文字ms) 0で一気に表示
   fadeOutOnLeave:true,
+
+  /* 接近シーンの演出
+     fadeIcons     : アイコンが消えるのを待つ時間(ms)
+     approachScale : 接近時にキャラを何倍の幅にするか
+     approachTop   : 接近時のキャラの縦位置（下にずらすほど手前に来た感じ） */
+  scene: { fadeIcons:220, approachScale:1.35, approachTop:"56%" },
 
   /* ステージ(縦長 5:7)内のレイアウト。数値はステージ幅/高さに対する比率 */
   charWidthRatio: 0.85,          // トップキャラの横幅(ステージ幅比) ※絵の縦横比に応じて調整
@@ -529,14 +533,25 @@ function runAction(action){
   if(action.type === "link")  return goto(action.url);
 }
 
-/* ---- トップのキャラ ---- */
+/* ---- トップのキャラ ----
+   待機・接近・寄り待機をひとつのスプライトにまとめ、同じ要素のまま状態を切り替える。
+   接近アニメの先頭に待機1コマ目を差し込むことで、立ち姿から地続きに動き出す。 */
 const stage = $("#stage");
 const charBtn = document.createElement("button");
 charBtn.id = "character";
 charBtn.setAttribute("aria-label","キャラクターにさわる");
-const charSprite = makeSprite({ idle: SITE.character.idle });
+
+const idleFrames = [].concat(SITE.character.idle);
+const walkFrames = [idleFrames[0]].concat(SITE.character.walk || []);
+const charSprite = makeSprite({
+  idle: idleFrames,
+  walk: walkFrames,
+  bust: SITE.character.bust || []
+});
 charBtn.appendChild(charSprite.el);
 charBtn.style.width = (CONFIG.charWidthRatio * 100) + "%";
+stage.style.setProperty("--scene-w",  (CONFIG.charWidthRatio * CONFIG.scene.approachScale * 100) + "%");
+stage.style.setProperty("--scene-top", CONFIG.scene.approachTop);
 stage.appendChild(charBtn);
 charSprite.play("idle", { loop:true });
 charBtn.addEventListener("click", ()=>{ if(!busy) runAction(SITE.character.action); });
@@ -656,39 +671,33 @@ SITE.otherLinks.forEach(l=>{
   list.appendChild(li);
 });
 
-/* ---- シーン（接近 → ギャルゲ構図） ---- */
-const scene   = $("#scene");
-const figure  = $("#figure");
+/* ---- シーン（アイコンが消える → その場で接近 → 吹き出し） ---- */
 const advbox  = $("#advbox");
 const advName = $("#advName");
 const advText = $("#advText");
 const advCho  = $("#advChoices");
-let sceneSprite = null, typeTimer = null;
+let typeTimer = null, sceneOpen = false;
 
 function openScene(key){
   const sc = SITE.scenes[key];
   if(!sc) return;
   busy = true;
-
-  const walk = sc.walk || SITE.character.walk;
-  const bust = sc.bust || SITE.character.bust;
-
-  figure.innerHTML = "";
-  sceneSprite = makeSprite({ walk, bust });
-  figure.appendChild(sceneSprite.el);
+  sceneOpen = true;
 
   advbox.classList.remove("show");
   advText.textContent = "";
   advCho.innerHTML = "";
   advName.textContent = sc.name || "";
-  scene.hidden = false;
-  requestAnimationFrame(()=>scene.classList.add("is-in"));
 
-  sceneSprite.play("walk", { done:()=>{
-    sceneSprite.play("bust", { loop:true, interval:CONFIG.bustInterval });
-    advbox.classList.add("show");
-    typeLine(sc.text, ()=>{ renderChoices(sc); busy = false; });
-  }});
+  /* まずアイコンをフェードアウト。消えきってから接近アニメを始める */
+  stage.classList.add("is-scene");
+  setTimeout(()=>{
+    charSprite.play("walk", { done:()=>{
+      charSprite.play("bust", { loop:true, interval:CONFIG.bustInterval });
+      advbox.classList.add("show");
+      typeLine(sc.text, ()=>{ renderChoices(sc); busy = false; });
+    }});
+  }, CONFIG.scene.fadeIcons);
 }
 
 function typeLine(text, done){
@@ -720,15 +729,14 @@ function renderChoices(sc){
 
 function closeScene(){
   clearInterval(typeTimer);
-  if(sceneSprite){ sceneSprite.stop(); sceneSprite = null; }
-  scene.classList.remove("is-in");
-  scene.hidden = true;
   advbox.classList.remove("show");
-  figure.innerHTML = "";
+  stage.classList.remove("is-scene");   // キャラが元の位置・大きさへ戻る
+  charSprite.play("idle", { loop:true });
+  sceneOpen = false;
   busy = false;
 }
 $("#back").addEventListener("click", closeScene);
-addEventListener("keydown", e=>{ if(e.key === "Escape" && !scene.hidden) closeScene(); });
+addEventListener("keydown", e=>{ if(e.key === "Escape" && sceneOpen) closeScene(); });
 
 /* ---- 文字まわり・先読み ---- */
 $("#siteName").innerHTML = SITE.name;

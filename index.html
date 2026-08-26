@@ -92,8 +92,19 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 .icon{
   position:absolute;transform:translate(-50%,-50%);
-  width:76px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  width:76px;
   touch-action:manipulation;
+}
+.icon-inner{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  animation:floaty var(--dur,4s) ease-in-out var(--delay,0s) infinite;
+  will-change:transform;
+}
+@keyframes floaty{
+  0%,100%{transform:translate(0,0)}
+  25%    {transform:translate(var(--dx,3px), calc(var(--dy,5px) * -1))}
+  50%    {transform:translate(0, calc(var(--dy,5px) * -0.4))}
+  75%    {transform:translate(calc(var(--dx,3px) * -1), var(--dy,5px))}
 }
 .icon .art{
   width:60px;height:60px;
@@ -299,6 +310,7 @@ window.PH = (function(){
 
 const CONFIG = {
   frameInterval: 200,   // 待機・接近アニメの1コマ(ms)
+  loopMode: "pingpong", // ループの動き方。"pingpong"=1→2→3→2→1… / "cycle"=1→2→3→1→2→3…
   bustInterval:  420,   // 近づいた後の待機ループの1コマ(ms)
   typeSpeed:     30,    // セリフの表示速度(1文字ms) 0で一気に表示
   fadeOutOnLeave:true,
@@ -313,7 +325,10 @@ const CONFIG = {
   iconLayout: {
     colX:[0.20, 0.80], yStart:0.11, yEnd:0.89,
     jitter:{ x:0.035, y:0.025 }, seed:7
-  }
+  },
+
+  /* アイコンのふわふわ浮遊。amountはズレ幅(px)、durationは1往復の秒数の範囲 */
+  iconFloat: { amount:{ x:4, y:6 }, duration:[3.4, 5.6] }
 };
 
 const SITE = {
@@ -336,7 +351,7 @@ const SITE = {
     { id:"home",    label:"HOME PAGE", art:PH.icon("HOME"),  action:{ type:"scene", scene:"home" } },
     { id:"skeb",    label:"skeb",      art:PH.icon("SKEB"),  action:{ type:"scene", scene:"skeb" } },
     { id:"youtube", label:"YouTube",   art:PH.icon("TUBE"),  action:{ type:"scene", scene:"youtube" } },
-    { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:you@example.com" } },
+    { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:sazyou.dnrk@example.com" } },
     { id:"pixiv",   label:"pixiv",     art:PH.icon("PIXIV"), action:{ type:"scene", scene:"pixiv" } },
     { id:"x",       label:"X",         art:PH.icon("X"),     action:{ type:"scene", scene:"x" } },
     { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
@@ -345,9 +360,19 @@ const SITE = {
   ],
 
   otherLinks: [
-    { label:"作品まとめ", note:"portfolio", url:"https://example.com/works" },
-    { label:"お問い合わせ", note:"contact form", url:"https://example.com/contact" }
-    // アイコンにしなかった細かいリンクはここに追加
+    { label:"砂上拠点電力発電所", note:"個人サイト・キャラ紹介・過去絵", url:"https://nanashie.wixsite.com/sazyou" },
+    { label:"マシュマロ",       note:"感想・ご要望はこちら",       url:"https://marshmallow-qa.com/sazyou_dnrk" },
+    { label:"skeb",            note:"すげーがんばってかきます",   url:"https://skeb.jp/@sazyou_dnrk" },
+    { label:"BOOTH",           note:"グッズ類と本",             url:"https://sazyoudenryoku.booth.pm/" },
+    { label:"SUZURI",          note:"服とかいろいろ",           url:"https://suzuri.jp/sazyou_dnrk" },
+    { label:"LINEスタンプ",     note:"好評発売中",              url:"https://store.line.me/stickershop/product/12991484/ja" },
+    { label:"note",            note:"文具と画材と備忘録",        url:"https://note.com/sazyou_dnrk" },
+    { label:"Instagram",       note:"",                       url:"https://www.instagram.com/sazyoudnrk/" },
+    { label:"SoundCloud",      note:"曲作ったりカバー曲作ったり", url:"https://soundcloud.com/sazyoudenryoku" },
+    { label:"YouTube",         note:"",                       url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" },
+    { label:"砂上天獄",         note:"注寝ととと・注与とと DL先",  url:"https://nanashie.wixsite.com/sazyouutau" },
+    { label:"misskey",         note:"作りかけです",             url:"https://misskey.io/@sazyou_dnrk" },
+    { label:"VRoid Hub",       note:"3Dでうごく",              url:"https://hub.vroid.com/users/26307709" }
   ],
 
   /* 近づいたあとの会話シーン。walk/bust を書かなければ character のものを使います */
@@ -356,24 +381,24 @@ const SITE = {
       name:"???",
       text:"私のことがしりたいの？",
       choices:[
-        { label:"マシュマロを送る",   url:"https://marshmallow-qa.com/xxxxx" },
+        { label:"マシュマロを送る",   url:"https://marshmallow-qa.com/sazyou_dnrk" },
         { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true }
       ]
     },
     home: {
       name:"???",
       text:"こっちが本家のサイト。ちゃんと見ていってね。",
-      choices:[ { label:"ホームページへ", url:"https://example.com" } ]
+      choices:[ { label:"ホームページへ", url:"https://nanashie.wixsite.com/sazyou" } ]
     },
     skeb: {
       name:"???",
       text:"このサイトに飛ぶ？　リクエスト、待ってるよ。",
-      choices:[ { label:"skeb.com へ", url:"https://skeb.jp/@yourname" } ]
+      choices:[ { label:"skeb.com へ", url:"https://skeb.jp/@sazyou_dnrk" } ]
     },
     youtube: {
       name:"???",
       text:"動画も置いてるよ。ひまなら見てって。",
-      choices:[ { label:"YouTube へ", url:"https://youtube.com/@yourchannel" } ]
+      choices:[ { label:"YouTube へ", url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" } ]
     },
     pixiv: {
       name:"???",
@@ -388,12 +413,12 @@ const SITE = {
     booth: {
       name:"???",
       text:"グッズとかも作ってるから、覗いてって。",
-      choices:[ { label:"BOOTH へ", url:"https://booth.pm" } ]
+      choices:[ { label:"BOOTH へ", url:"https://sazyoudenryoku.booth.pm/" } ]
     },
     note: {
       name:"???",
       text:"制作の話とか、たまに書いてる。",
-      choices:[ { label:"note へ", url:"https://note.com/yourname" } ]
+      choices:[ { label:"note へ", url:"https://note.com/sazyou_dnrk" } ]
     }
   }
 };
@@ -441,14 +466,24 @@ function makeSprite(sets){
       const interval = opt.interval || CONFIG.frameInterval;
       show(stack,0);
       if(n < 2){ if(!opt.loop) setTimeout(()=>opt.done && opt.done(), interval); return; }
-      let i = 0;
+
+      /* 再生するコマ順を組み立てる。
+         pingpong: 1→2→3→2→1→2→3→2… と往復する（3コマなら [0,1,2,1]）
+         cycle   : 1→2→3→1→2→3… と先頭に戻る */
+      let seq = [];
+      for(let k = 0; k < n; k++) seq.push(k);
+      if(opt.loop && CONFIG.loopMode === "pingpong" && n > 2){
+        for(let k = n - 2; k >= 1; k--) seq.push(k);
+      }
+
+      let s = 0;
       timer = setInterval(()=>{
-        i++;
-        if(i >= n){
-          if(opt.loop) i = 0;
-          else { stop(); show(stack,n-1); opt.done && opt.done(); return; }
+        s++;
+        if(s >= seq.length){
+          if(opt.loop) s = 0;
+          else { stop(); show(stack, seq[seq.length-1]); opt.done && opt.done(); return; }
         }
-        show(stack,i);
+        show(stack, seq[s]);
       }, interval);
     }
   };
@@ -511,6 +546,7 @@ function iconPositions(n, L){
 }
 
 const ICON_POS = iconPositions(SITE.icons.length, CONFIG.iconLayout);
+const floatRnd = makeRandom(CONFIG.iconLayout.seed === null ? null : CONFIG.iconLayout.seed + 99);
 
 SITE.icons.forEach((icon,i)=>{
   const p = ICON_POS[i];
@@ -519,6 +555,17 @@ SITE.icons.forEach((icon,i)=>{
   btn.style.left = (p.x * 100) + "%";
   btn.style.top  = (p.y * 100) + "%";
   btn.setAttribute("aria-label", icon.label);
+
+  /* 浮遊アニメ用のラッパー。1個ずつ速度・向き・開始タイミングをずらす */
+  const F = CONFIG.iconFloat;
+  const inner = document.createElement("span");
+  inner.className = "icon-inner";
+  const dur = F.duration[0] + floatRnd() * (F.duration[1] - F.duration[0]);
+  inner.style.setProperty("--dur",   dur.toFixed(2) + "s");
+  inner.style.setProperty("--delay", (-floatRnd() * dur).toFixed(2) + "s");
+  inner.style.setProperty("--dx", ((floatRnd() * 2 - 1) * F.amount.x).toFixed(1) + "px");
+  inner.style.setProperty("--dy", ((floatRnd() * .6 + .4) * F.amount.y).toFixed(1) + "px");
+
   const art = document.createElement("div");
   art.className = "art";
   const img = document.createElement("img");
@@ -527,7 +574,8 @@ SITE.icons.forEach((icon,i)=>{
   const cap = document.createElement("span");
   cap.className = "cap";
   cap.textContent = icon.label;
-  btn.append(art, cap);
+  inner.append(art, cap);
+  btn.appendChild(inner);
   stage.appendChild(btn);
   btn.addEventListener("click", ()=>{ if(!busy) runAction(icon.action); });
 });

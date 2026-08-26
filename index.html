@@ -83,6 +83,11 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   top:var(--scene-top);
   pointer-events:none;
 }
+/* 接近しきったあと（bust）はもう一段だけ大きく寄る */
+#stage.is-scene.is-bust #character{
+  width:var(--bust-w) !important;
+  top:var(--bust-top);
+}
 #stage.is-scene #character::after{opacity:0}
 #character .sprite{width:100%}
 #character::after{
@@ -347,7 +352,8 @@ const CONFIG = {
      fadeIcons     : アイコンが消えるのを待つ時間(ms)
      approachScale : 接近時にキャラを何倍の幅にするか
      approachTop   : 接近時のキャラの縦位置（下にずらすほど手前に来た感じ） */
-  scene: { fadeIcons:220, approachScale:1.35, approachTop:"56%" },
+  scene: { fadeIcons:220, approachScale:1.35, approachTop:"56%",
+           bustScale:1.18, bustTop:"60%" },
 
   /* ステージ(縦長 5:7)内のレイアウト。数値はステージ幅/高さに対する比率 */
   charWidthRatio: 0.85,          // トップキャラの横幅(ステージ幅比) ※絵の縦横比に応じて調整
@@ -558,6 +564,8 @@ charBtn.appendChild(charSprite.el);
 charBtn.style.width = (CONFIG.charWidthRatio * 100) + "%";
 stage.style.setProperty("--scene-w",  (CONFIG.charWidthRatio * CONFIG.scene.approachScale * 100) + "%");
 stage.style.setProperty("--scene-top", CONFIG.scene.approachTop);
+stage.style.setProperty("--bust-w",   (CONFIG.charWidthRatio * CONFIG.scene.approachScale * CONFIG.scene.bustScale * 100) + "%");
+stage.style.setProperty("--bust-top",  CONFIG.scene.bustTop);
 stage.appendChild(charBtn);
 charSprite.play("idle", { loop:true });
 charBtn.addEventListener("click", ()=>{ if(!busy) runAction(SITE.character.action); });
@@ -699,6 +707,7 @@ function openScene(key){
   stage.classList.add("is-scene");
   setTimeout(()=>{
     charSprite.play("walk", { done:()=>{
+      stage.classList.add("is-bust");   // ここでもう一段大きくなる
       charSprite.play("bust", { loop:true, interval:CONFIG.bustInterval });
       advbox.classList.add("show");
       typeLine(sc.text, ()=>{ renderChoices(sc); busy = false; });
@@ -736,7 +745,7 @@ function renderChoices(sc){
 function closeScene(){
   clearInterval(typeTimer);
   advbox.classList.remove("show");
-  stage.classList.remove("is-scene");   // キャラが元の位置・大きさへ戻る
+  stage.classList.remove("is-scene","is-bust");   // キャラが元の位置・大きさへ戻る
   charSprite.play("idle", { loop:true });
   sceneOpen = false;
   busy = false;

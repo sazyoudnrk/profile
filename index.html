@@ -376,8 +376,14 @@ const SITE = {
       "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/idle_2.png",
       "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/idle_3.png"
     ],
-    walk: [PH.walk(0), PH.walk(1), PH.walk(2)],   // 近づいてくる3コマ（全シーン共通）
-    bust: [PH.bust(0), PH.bust(1), PH.bust(2)],   // 近づいた後のループ
+    walk: [
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/walk_1.png",
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/walk_2.png",
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/walk_3.png"
+    ],   // 近づいてくる3コマ（先頭に idle_1 が自動で差し込まれます）
+    bust: [
+      "https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/char/bust_1.png"
+    ],   // 近づいた後の待機。差分ができたら bust_2, bust_3 を足すとループします
     action: { type:"scene", scene:"aboutMe" }     // キャラをさわった時
   },
 

@@ -129,7 +129,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   text-transform:none;color:var(--navy);opacity:.65;margin-top:2px}
 
 /* ウェブアプリ一覧 */
-.app-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.app-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .app-item{
   display:flex;flex-direction:column;gap:0;
   border:2px solid var(--navy);
@@ -353,7 +353,7 @@ const CONFIG = {
      jitter  : ランダムにズラす量（x,y ともに±この値）
      seed    : 数値を入れると毎回同じ配置。null にすると読み込むたび配置が変わる */
   iconLayout: {
-    colX:[0.20, 0.80], yStart:0.11, yEnd:0.89,
+    colX:[0.17, 0.83], yStart:0.11, yEnd:0.89,
     jitter:{ x:0.035, y:0.025 }, seed:7
   },
 
@@ -382,8 +382,6 @@ const SITE = {
     { id:"skeb",    label:"skeb",      art:"https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/icon/skeb.png", caption:false,  action:{ type:"scene", scene:"skeb" } },
     { id:"youtube", label:"YouTube",   art:"https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/icon/youtube.png", caption:false,  action:{ type:"scene", scene:"youtube" } },
     { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:sazyou.dnrk@example.com" } },
-    { id:"pixiv",   label:"pixiv",     art:PH.icon("PIXIV"), action:{ type:"scene", scene:"pixiv" } },
-    { id:"x",       label:"X",         art:PH.icon("X"),     action:{ type:"scene", scene:"x" } },
     { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
     { id:"note",    label:"note",      art:PH.icon("NOTE"),  action:{ type:"scene", scene:"note" } }
     // 8個は上限目安。これ以上増える分は「他のリンク」欄に流すのがおすすめ
@@ -437,16 +435,6 @@ const SITE = {
       name:"???",
       text:"動画も置いてるよ。ひまなら見てって。",
       choices:[ { label:"YouTube へ", url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" } ]
-    },
-    pixiv: {
-      name:"???",
-      text:"描いたやつ、こっちに置いてるよ。",
-      choices:[ { label:"pixiv へ", url:"https://pixiv.net/users/000000" } ]
-    },
-    x: {
-      name:"???",
-      text:"つぶやきはこっち。よかったらフォローしてね。",
-      choices:[ { label:"X へ", url:"https://x.com/sazyou_dnrk" } ]
     },
     booth: {
       name:"???",

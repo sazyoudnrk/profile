@@ -227,7 +227,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   font-size:13px;font-weight:700;letter-spacing:.06em;
   box-shadow:0 3px 0 var(--navy);
 }
-.adv-text{font-size:17px;line-height:1.7;min-height:3.4em;letter-spacing:.02em}
+.adv-text{font-size:15px;line-height:1.65;min-height:3.4em;letter-spacing:.01em;
+  max-height:44vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .adv-text .caret{
   display:inline-block;width:.55em;height:.55em;margin-left:.25em;
   background:var(--blue);border-radius:2px;
@@ -235,6 +236,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 @keyframes blink{50%{opacity:0}}
 .choices{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.choices:empty{margin-top:0}
 .choice{
   width:100%;padding:14px 12px;
   border:3px solid var(--navy);border-radius:14px 11px 15px 12px;
@@ -243,6 +245,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   transition:transform .1s ease,box-shadow .1s ease;
 }
 .choice.sub{background:#fff;color:var(--navy)}
+.choice.pending{opacity:.5}
 .choice.sub:active,.choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--navy)}
 
 #back{
@@ -399,16 +402,18 @@ const SITE = {
     { id:"youtube", label:"YouTube",   art:"https://raw.githubusercontent.com/sazyoudnrk/profile/main/assets/icon/youtube.png", caption:false,  action:{ type:"scene", scene:"youtube" } },
     { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:sazyou.dnrk@example.com" } },
     { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
-    { id:"note",    label:"note",      art:PH.icon("NOTE"),  action:{ type:"scene", scene:"note" } }
+    { id:"order",   label:"依頼について", art:PH.icon("ORDER"), action:{ type:"scene", scene:"commission" } }
     // 8個は上限目安。これ以上増える分は「他のリンク」欄に流すのがおすすめ
   ],
 
   /* ウェブアプリ一覧。thumb は省略可（省略時は頭文字が表示されます） */
   apps: [
-    { label:"Color Cage",   note:"ランダムな配色でお絵かき", url:"https://sazyoudnrk.github.io/", thumb:"" },
-    { label:"STICKER LAB",  note:"3Dステッカー質感シミュレータ", url:"https://sazyoudnrk.github.io/", thumb:"" },
-    { label:"クソ俳句同好会", note:"匿名で俳句を投稿する場所",  url:"https://sazyoudnrk.github.io/", thumb:"" }
-    // 増やすとそのまま2列グリッドに並びます
+    { label:"Acrylayer",  note:"アクキー3Dプレビュー", url:"https://sazyoudnrk.github.io/Acrylayer/", thumb:"" },
+    { label:"Fruitopia",  note:"果樹園ビルドパズル",   url:"https://sazyoudnrk.github.io/Fruitopia/", thumb:"" },
+    { label:"Color Cage", note:"ランダム配色でお絵かき", url:"https://sazyoudnrk.github.io/", thumb:"" },
+    { label:"STICKER LAB", note:"3Dステッカー質感シミュレータ", url:"https://sazyoudnrk.github.io/imagistick-lab/", thumb:"" },
+    { label:"クソ俳句同好会", note:"匿名で俳句を投稿する場所", url:"https://sazyoudnrk.github.io/shitty-haiku-club/", thumb:"" }
+    // 3列グリッド。増やすと自動で段が増えます
   ],
 
   otherLinks: [
@@ -430,37 +435,41 @@ const SITE = {
   /* 近づいたあとの会話シーン。walk/bust を書かなければ character のものを使います */
   scenes: {
     aboutMe: {
-      name:"???",
+      name:"でんでん",
       text:"私のことがしりたいの？",
       choices:[
-        { label:"マシュマロを送る",   url:"https://marshmallow-qa.com/sazyou_dnrk" },
-        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true }
+        { label:"マシュマロを送る",     url:"https://marshmallow-qa.com/sazyou_dnrk" },
+        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true },
+        { label:"質問",                url:"", sub:true }
       ]
     },
     home: {
-      name:"???",
-      text:"こっちが本家のサイト。ちゃんと見ていってね。",
+      name:"でんでん",
+      text:"キャラ詳細とかかいてあるのはこっち！",
       choices:[ { label:"ホームページへ", url:"https://nanashie.wixsite.com/sazyou" } ]
     },
     skeb: {
-      name:"???",
-      text:"このサイトに飛ぶ？　リクエスト、待ってるよ。",
-      choices:[ { label:"skeb.com へ", url:"https://skeb.jp/@sazyou_dnrk" } ]
+      name:"でんでん",
+      text:"リクエストしてくれるの？デジタルのskebとアナログのskebがあるよ！",
+      choices:[
+        { label:"skeb.com へ（デジタル）", url:"https://skeb.jp/@sazyou_dnrk" },
+        { label:"skeb.com へ（アナログ）", url:"", sub:true }
+      ]
     },
     youtube: {
-      name:"???",
-      text:"動画も置いてるよ。ひまなら見てって。",
+      name:"でんでん",
+      text:"音楽とか3DCGもつくるよ！あんま更新してないけどね",
       choices:[ { label:"YouTube へ", url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" } ]
     },
     booth: {
-      name:"???",
-      text:"グッズとかも作ってるから、覗いてって。",
+      name:"でんでん",
+      text:"コミティアで出した本とか原画置いてるよ！発送は遅いかも",
       choices:[ { label:"BOOTH へ", url:"https://sazyoudenryoku.booth.pm/" } ]
     },
-    note: {
-      name:"???",
-      text:"制作の話とか、たまに書いてる。",
-      choices:[ { label:"note へ", url:"https://note.com/sazyou_dnrk" } ]
+    commission: {
+      name:"でんでん",
+      text:"一枚絵は一万円から受け付けます。文面で残したいからメールで送ってください。リテイクや細かい指示が不要ならskebがおすすめです。ただskebの規約上クオリティの担保はできません。",
+      choices:[]
     }
   }
 };
@@ -732,8 +741,9 @@ function renderChoices(sc){
   advCho.innerHTML = "";
   (sc.choices || []).forEach(c=>{
     const b = document.createElement("button");
-    b.className = "choice" + (c.sub ? " sub" : "");
-    b.textContent = c.label;
+    const pending = !c.scene && !c.url;   // リンク先がまだ空のもの
+    b.className = "choice" + (c.sub ? " sub" : "") + (pending ? " pending" : "");
+    b.textContent = c.label + (pending ? "（準備中）" : "");
     b.addEventListener("click", ()=>{
       if(c.scene){ closeScene(); setTimeout(()=>openScene(c.scene), 60); }
       else goto(c.url);

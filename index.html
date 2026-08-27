@@ -283,6 +283,12 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   box-shadow:3px 3px 0 var(--sky);text-align:left;
   transition:transform .1s ease,box-shadow .1s ease;
 }
+/* 説明が長い項目は縦積みにして読みやすくする */
+.link-item.is-long{flex-direction:column;align-items:flex-start;gap:5px}
+.link-item.is-long .n{
+  font-family:var(--ui);font-size:11px;letter-spacing:0;line-height:1.55;
+  color:var(--navy);opacity:.7;
+}
 .link-item:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--sky)}
 .link-item .l{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .link-item .t{font-size:15px;font-weight:600}
@@ -416,7 +422,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   box-shadow:0 3px 0 var(--navy);
 }
 .adv-text{font-size:15px;line-height:1.7;min-height:3.4em;letter-spacing:.01em;
-  max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .adv-text .caret{
   display:inline-block;width:.55em;height:.55em;margin-left:.25em;
   background:var(--blue);border-radius:2px;
@@ -615,7 +621,8 @@ const SITE = {
     { id:"youtube", label:"YouTube",   art:"assets/icon/youtube.png", caption:false,  action:{ type:"scene", scene:"youtube" } },
     { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:sazyou.dnrk@example.com" } },
     { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
-    { id:"order",   label:"依頼について", art:PH.icon("ORDER"), action:{ type:"scene", scene:"commission" } }
+    { id:"order",   label:"依頼について", art:PH.icon("ORDER"), action:{ type:"scene", scene:"commission" } },
+    { id:"marshmallow", label:"マシュマロ", art:PH.icon("MARO"), action:{ type:"scene", scene:"marshmallow" } }
     // 8個は上限目安。これ以上増える分は「他のリンク」欄に流すのがおすすめ
   ],
 
@@ -685,7 +692,7 @@ const SITE = {
       { label:"VRoid Hub",   note:"3Dでうごく！DLできるvrmおいてる",  url:"https://hub.vroid.com/users/26307709" }
     ]},
     { category:"その他", items:[
-      { label:"マシュマロ", note:"感想ください‼️",      url:"https://marshmallow-qa.com/sazyou_dnrk" },
+      { label:"マシュマロ", note:"ご要望・感想はこちら", url:"https://marshmallow-qa.com/sazyou_dnrk" },
       { label:"note",      note:"文具と画材と備忘録",  url:"https://note.com/sazyou_dnrk" }
     ]}
   ],
@@ -696,9 +703,8 @@ const SITE = {
       name:"でんでん",
       text:"私のことがしりたいの？",
       choices:[
-        { label:"マシュマロを送る",     url:"https://marshmallow-qa.com/sazyou_dnrk" },
-        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true },
-        { label:"質問する",             scene:"questions", sub:true }
+        { label:"質問する",             scene:"questions" },
+        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true }
       ]
     },
     home: {
@@ -739,7 +745,7 @@ const SITE = {
     },
     q_who: {
       name:"でんでん",
-      text:"一般成人社会人だよ。自動車免許もってて、猫飼ってて……夢を見るのが得意だよ！",
+      text:"一般成人社会人だよ。自動車免許もってて、猫飼ってて……夢を見るのが得意だよ！何かを作ることとゲームが大好き！\n絵と動画と音楽と3DCGを作ってて、一次創作がメインかな。たまにサークル「エレクトリック電力」としてコミティアにでてるよ。",
       choices:[ { label:"ほかの質問", scene:"questions" } ]
     },
     q_allergy: {
@@ -763,9 +769,14 @@ const SITE = {
       choices:[ { label:"ほかの質問", scene:"questions" } ]
     },
 
+    marshmallow: {
+      name:"でんでん",
+      text:"活動に関するご要望、感想お待ちしてます！些細なことでも何か送ってくれたら嬉しい。\n返信することは少ないかも。自分へのメッセージを自分の中で大事にしたいから……\nでも、返信を促すようコメント添えてくれれば必ず返すからね！",
+      choices:[ { label:"マシュマロを送る", url:"https://marshmallow-qa.com/sazyou_dnrk" } ]
+    },
     commission: {
       name:"でんでん",
-      text:"一枚絵は一万円から受け付けます。文面で残したいからメールで送ってください。リテイクや細かい指示が不要ならskebがおすすめです。ただskebの規約上クオリティの担保はできません。",
+      text:"一枚絵は1キャラ8000円から受け付けます。具体的な背景込みだとその分増える感じです。\nやりとりがない分少しリーズナブルなので、リテイクや細かい指示が不要ならskebがおすすめです。\nただ、skebの規約上クオリティの担保はできません。\n\n要望、用途、納品形式、参考資料、納期、予算などが明確だと話がスムーズに進みます。料金はラフ提出時点で料金の半額を支払っていただき、最後の完成データ提出時にもう半額を支払う形でお願いいたします。支払いは銀行振込か、アマギフでお願いいたします。\n\n初めてご依頼の方は基本的には各種DMではなくメールでお願いいたします。",
       choices:[]
     }
   }
@@ -989,7 +1000,8 @@ const list = $("#linkList");
 
 function linkButton(l){
   const b = document.createElement("button");
-  b.className = "link-item" + (l.badge ? " has-badge" : "");
+  const long = (l.note || "").length > 18;   // 説明が長いものは縦積み表示
+  b.className = "link-item" + (l.badge ? " has-badge" : "") + (long ? " is-long" : "");
   b.innerHTML = '<span class="l"><span class="t"></span></span><span class="n"></span>';
   b.querySelector(".t").textContent = l.label;
   b.querySelector(".n").textContent = l.note || "";
@@ -1055,15 +1067,29 @@ function openScene(key){
 
 function typeLine(text, done){
   clearInterval(typeTimer);
-  if(reduced || !CONFIG.typeSpeed){ advText.textContent = text; done(); return; }
+  if(reduced || !CONFIG.typeSpeed){ advText.innerHTML = renderLine(text); done(); return; }
+
+  /* 表示中に吹き出しをタップすると最後まで一気に出す */
+  const skip = ()=>{
+    clearInterval(typeTimer);
+    advText.innerHTML = renderLine(text);
+    advbox.removeEventListener("click", skip);
+    busy = false;
+    done();
+  };
+  advbox.addEventListener("click", skip);
+  const finish = ()=>{ advbox.removeEventListener("click", skip); done(); };
+
   let i = 0;
   const caret = '<span class="caret"></span>';
   typeTimer = setInterval(()=>{
     i++;
-    advText.innerHTML = escapeHTML(text.slice(0,i)) + (i < text.length ? caret : "");
-    if(i >= text.length){ clearInterval(typeTimer); done(); }
+    advText.innerHTML = renderLine(text.slice(0,i)) + (i < text.length ? caret : "");
+    if(i >= text.length){ clearInterval(typeTimer); finish(); }
   }, CONFIG.typeSpeed);
 }
+/* セリフ内の改行を <br> にして表示する */
+function renderLine(t){ return escapeHTML(t).replace(/\n/g, "<br>"); }
 function escapeHTML(s){ return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 
 /* シーンに入ったまま、セリフと選択肢だけ差し替える（接近アニメは再生しない） */

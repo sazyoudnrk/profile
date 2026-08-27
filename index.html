@@ -155,7 +155,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   touch-action:manipulation;z-index:1;
   /* 横幅は CONFIG.charWidthRatio (JS側) で指定 */
-  transition:width .55s cubic-bezier(.3,.9,.4,1), top .55s cubic-bezier(.3,.9,.4,1);
+  transition:width .55s cubic-bezier(.3,.9,.4,1), top .55s cubic-bezier(.3,.9,.4,1), opacity .25s ease;
 }
 /* シーン中はキャラが手前に寄る（幅と位置は JS が --scene-w / --scene-top で渡す） */
 #stage.is-scene #character{
@@ -254,6 +254,17 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 .app-item .n{display:block;font-size:9.5px;line-height:1.35;color:var(--navy);opacity:.65;margin-top:3px}
 .link-list{list-style:none;display:flex;flex-direction:column;gap:9px}
+.link-cat{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:800;letter-spacing:.06em;
+  color:var(--navy);
+  margin-top:6px;
+}
+.link-cat:first-child{margin-top:0}
+.link-cat::after{
+  content:"";flex:1;height:2px;
+  background:var(--sky);border-radius:2px;
+}
 .link-item{
   display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
   padding:13px 15px;border:2px solid var(--navy);
@@ -262,12 +273,62 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   transition:transform .1s ease,box-shadow .1s ease;
 }
 .link-item:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--sky)}
+.link-item .l{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .link-item .t{font-size:15px;font-weight:600}
+
+/* 停止中などの状態バッジ */
+.badge{
+  display:inline-block;flex:none;
+  font-size:10px;font-weight:800;letter-spacing:.02em;line-height:1.5;
+  color:var(--navy);background:var(--yellow);
+  border:1.5px solid var(--navy);border-radius:6px;
+  padding:0 6px;
+}
+.link-item.has-badge{opacity:.72}
 .link-item .n{font-family:var(--label);font-size:11px;letter-spacing:.1em;color:var(--blue);opacity:.7}
 
 .credit{margin-top:26px;text-align:center;font-family:var(--label);
   font-size:11px;letter-spacing:.18em;color:#fff;opacity:.9;
   text-shadow:0 1px 2px rgba(26,47,110,.4)}
+
+/* ===== たこたろ ===== */
+#tako{
+  position:absolute;z-index:3;left:0;top:0;
+  touch-action:manipulation;line-height:1;
+  padding:10px;                 /* 動く的なのでタップ判定を少し広めに */
+  /* 位置は JS が transform で動かす。ゆっくり泳ぐので長めのイージング */
+  transition:transform var(--swim,6s) cubic-bezier(.45,.05,.55,.95), opacity .22s ease;
+  will-change:transform;
+}
+#tako .tako-in{
+  display:block;font-size:38px;line-height:1;
+  animation:takoWobble 2.3s ease-in-out infinite;
+  transition:transform .1s ease;
+}
+/* 泳ぎながら少し伸び縮み・傾く */
+@keyframes takoWobble{
+  0%,100%{transform:scale(1,1) rotate(-4deg)}
+  50%    {transform:scale(1.06,.94) rotate(4deg)}
+}
+#tako img{width:52px;height:52px;object-fit:contain}
+#tako:active .tako-in{transform:scale(.9)}
+#stage.is-scene #tako{opacity:0;pointer-events:none}
+
+/* 寄りの表示（接近アニメなしでいきなりこの状態になる） */
+#takoBig{
+  position:absolute;left:50%;top:52%;z-index:1;
+  transform:translate(-50%,-50%);
+  font-size:190px;line-height:1;text-align:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .28s ease,transform .28s cubic-bezier(.3,.9,.4,1);
+}
+#takoBig img{width:min(72%,300px);margin:0 auto}
+#stage.is-tako #takoBig{opacity:1;animation:takoBob 2.6s ease-in-out infinite}
+#stage.is-tako #character{opacity:0}
+@keyframes takoBob{
+  0%,100%{transform:translate(-50%,-50%)}
+  50%    {transform:translate(-50%,calc(-50% - 12px))}
+}
 
 /* ===== ギャルゲ構図のシーン（ステージ内でそのまま展開する） ===== */
 #stage.is-scene{background:linear-gradient(180deg,#DFF6FF 0%,#EFFAFF 55%,#FFF6DC 100%)}
@@ -327,11 +388,13 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .choices:empty{margin-top:0}
 .choice{
   width:100%;padding:9px 10px;
+  display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;
   border:2px solid var(--navy);border-radius:12px 10px 13px 11px;
   background:var(--blue);color:#fff;font-weight:700;font-size:13px;line-height:1.35;
   box-shadow:0 3px 0 var(--navy);
   transition:transform .1s ease,box-shadow .1s ease;
 }
+.choice .badge{background:#fff}
 .choice.sub{background:#fff;color:var(--navy)}
 .choice.pending{opacity:.5}
 .choice.sub:active,.choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--navy)}
@@ -370,6 +433,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   </div>
   <main class="card" id="stage" aria-label="キャラクターとリンク">
     <div id="burst"></div>
+    <button id="tako" aria-label="たこたろにさわる"><span class="tako-in"></span></button>
+    <div id="takoBig" aria-hidden="true"></div>
     <button id="back" aria-label="もどる">×</button>
     <div id="advbox">
       <div class="adv-inner">
@@ -524,25 +589,52 @@ const SITE = {
     // 3列グリッド。増やすと自動で段が増えます
   ],
 
+  /* たこたろ。キャラの近くを漂う。art に画像パスを入れると絵文字から差し替わります */
+  tako: {
+    name:"たこたろ",
+    emoji:"🐙",
+    art:"",                    // 例: "assets/char/tako.png"
+    pos:{ x:0.72, y:0.30 },    // 最初に現れる位置（幅・高さに対する比率）
+    /* ステージ内を泳ぎ回る設定
+       area  : 動き回れる範囲   speed : 1回の移動にかける秒数
+       pause : 着いてから次に動き出すまでの間(ms) */
+    swim:{ area:{ x:[0.10,0.90], y:[0.08,0.92] }, speed:[5,9], pause:[200,1400] },
+    lines:[
+      "飼われてるたこ",
+      "たこたろのつぶやき"
+    ]
+  },
+
   /* イベント参加予定。日付を過ぎたものは自動で「過去の参加イベント」へ移動します */
   events: [
     { date:"2026-12-13", title:"COMITIA158", venue:"東京ビッグサイト 東1・2・3・7・8ホール", space:"", note:"" }
   ],
 
+  /* 他のリンク。カテゴリごとに分けて表示されます */
   otherLinks: [
-    { label:"砂上拠点電力発電所", note:"個人サイト・キャラ紹介・過去絵", url:"https://nanashie.wixsite.com/sazyou" },
-    { label:"マシュマロ",       note:"感想・ご要望はこちら",       url:"https://marshmallow-qa.com/sazyou_dnrk" },
-    { label:"skeb",            note:"すげーがんばってかきます",   url:"https://skeb.jp/@sazyou_dnrk" },
-    { label:"BOOTH",           note:"グッズ類と本",             url:"https://sazyoudenryoku.booth.pm/" },
-    { label:"SUZURI",          note:"服とかいろいろ",           url:"https://suzuri.jp/sazyou_dnrk" },
-    { label:"LINEスタンプ",     note:"好評発売中",              url:"https://store.line.me/stickershop/product/12991484/ja" },
-    { label:"note",            note:"文具と画材と備忘録",        url:"https://note.com/sazyou_dnrk" },
-    { label:"Instagram",       note:"",                       url:"https://www.instagram.com/sazyoudnrk/" },
-    { label:"SoundCloud",      note:"曲作ったりカバー曲作ったり", url:"https://soundcloud.com/sazyoudenryoku" },
-    { label:"YouTube",         note:"",                       url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" },
-    { label:"砂上天獄",         note:"注寝ととと・注与とと DL先",  url:"https://nanashie.wixsite.com/sazyouutau" },
-    { label:"misskey",         note:"作りかけです",             url:"https://misskey.io/@sazyou_dnrk" },
-    { label:"VRoid Hub",       note:"3Dでうごく",              url:"https://hub.vroid.com/users/26307709" }
+    { category:"有償依頼", items:[
+      { label:"skeb（デジタル）", note:"すげーがんばってかきます", url:"https://skeb.jp/@sazyou_dnrk" },
+      { label:"skeb（アナログ）", note:"すげーがんばってかきます", url:"https://skeb.jp/@kazyou_dnrk", badge:"停止中" }
+    ]},
+    { category:"ホームページ", items:[
+      { label:"砂上拠点電力発電所", note:"個人サイト・キャラ紹介・過去絵",   url:"https://nanashie.wixsite.com/sazyou" },
+      { label:"砂上天獄",         note:"UTAU 注寝ととと・注与とと DL先", url:"https://nanashie.wixsite.com/sazyouutau" }
+    ]},
+    { category:"販売", items:[
+      { label:"BOOTH",       note:"グッズ類、本、原画",     url:"https://sazyoudenryoku.booth.pm/" },
+      { label:"SUZURI",      note:"服とかいろいろ　たまに追加", url:"https://suzuri.jp/sazyou_dnrk" },
+      { label:"LINEスタンプ", note:"好評発売中！",          url:"https://store.line.me/stickershop/product/12991484/ja" }
+    ]},
+    { category:"作品", items:[
+      { label:"Instagram",   note:"更新頑張りたい",              url:"https://www.instagram.com/sazyoudnrk/" },
+      { label:"SoundCloud",  note:"曲作ったりカバー曲作ったり",      url:"https://soundcloud.com/sazyoudenryoku" },
+      { label:"YouTube",     note:"曲、カバー、3DCG、メイキングとか", url:"https://www.youtube.com/channel/UC98V2ow4DnlU5SzxHodJ2Bw" },
+      { label:"VRoid Hub",   note:"3Dでうごく！DLできるvrmおいてる",  url:"https://hub.vroid.com/users/26307709" }
+    ]},
+    { category:"その他", items:[
+      { label:"マシュマロ", note:"感想ください‼️",      url:"https://marshmallow-qa.com/sazyou_dnrk" },
+      { label:"note",      note:"文具と画材と備忘録",  url:"https://note.com/sazyou_dnrk" }
+    ]}
   ],
 
   /* 近づいたあとの会話シーン。walk/bust を書かなければ character のものを使います */
@@ -566,7 +658,7 @@ const SITE = {
       text:"リクエストしてくれるの？デジタルのskebとアナログのskebがあるよ！",
       choices:[
         { label:"skeb.com へ（デジタル）", url:"https://skeb.jp/@sazyou_dnrk" },
-        { label:"skeb.com へ（アナログ）", url:"", sub:true }
+        { label:"skeb.com へ（アナログ）", url:"https://skeb.jp/@kazyou_dnrk", sub:true, badge:"リクエスト停止中" }
       ]
     },
     youtube: {
@@ -839,18 +931,43 @@ const appList = $("#appList");
   appList.appendChild(b);
 });
 
-/* ---- 他のリンク ---- */
+/* ---- 他のリンク（カテゴリごとに見出しを出す） ---- */
 const list = $("#linkList");
-SITE.otherLinks.forEach(l=>{
-  const li = document.createElement("li");
+
+function linkButton(l){
   const b = document.createElement("button");
-  b.className = "link-item";
-  b.innerHTML = '<span class="t"></span><span class="n"></span>';
+  b.className = "link-item" + (l.badge ? " has-badge" : "");
+  b.innerHTML = '<span class="l"><span class="t"></span></span><span class="n"></span>';
   b.querySelector(".t").textContent = l.label;
   b.querySelector(".n").textContent = l.note || "";
+  if(l.badge){
+    const bd = document.createElement("span");
+    bd.className = "badge";
+    bd.textContent = l.badge;
+    b.querySelector(".l").appendChild(bd);
+  }
   b.addEventListener("click", ()=>goto(l.url));
-  li.appendChild(b);
-  list.appendChild(li);
+  return b;
+}
+
+SITE.otherLinks.forEach(group=>{
+  /* カテゴリ分けせず従来どおり並べた書き方にも対応しておく */
+  if(!group.items){
+    const li = document.createElement("li");
+    li.appendChild(linkButton(group));
+    list.appendChild(li);
+    return;
+  }
+  const head = document.createElement("li");
+  head.className = "link-cat";
+  head.textContent = group.category;
+  list.appendChild(head);
+
+  group.items.forEach(l=>{
+    const li = document.createElement("li");
+    li.appendChild(linkButton(l));
+    list.appendChild(li);
+  });
 });
 
 /* ---- シーン（アイコンが消える → その場で接近 → 吹き出し） ---- */
@@ -912,22 +1029,120 @@ function renderChoices(sc){
   advCho.innerHTML = "";
   (sc.choices || []).forEach(c=>{
     const b = document.createElement("button");
-    const pending = !c.scene && !c.url;   // リンク先がまだ空のもの
+    const pending = !c.scene && !c.url && !c.tako;   // リンク先がまだ空のもの
     b.className = "choice" + (c.sub ? " sub" : "") + (pending ? " pending" : "");
-    b.textContent = c.label + (pending ? "（準備中）" : "");
+    b.textContent = "";
+    const lab = document.createElement("span");
+    lab.textContent = c.label + (pending ? "（準備中）" : "");
+    b.appendChild(lab);
+    if(c.badge){
+      const bd = document.createElement("span");
+      bd.className = "badge";
+      bd.textContent = c.badge;
+      b.appendChild(bd);
+    }
     b.addEventListener("click", ()=>{
       if(busy) return;
-      if(c.scene){ switchScene(c.scene); }   // 近づき直さずセリフだけ切り替え
+      if(c.tako){                            // たこたろのつぶやきを引き直す
+        busy = true;
+        advText.textContent = "";
+        typeLine(takoLine(), ()=>{ busy = false; });
+      }
+      else if(c.scene){ switchScene(c.scene); }   // 近づき直さずセリフだけ切り替え
       else goto(c.url);
     });
     advCho.appendChild(b);
   });
 }
 
+/* ---- たこたろ ---- */
+const takoBtn = $("#tako");
+const takoBig = $("#takoBig");
+
+(function setupTako(){
+  const T = SITE.tako;
+  if(!T){ takoBtn.style.display = "none"; return; }
+
+  const inner = takoBtn.querySelector(".tako-in");
+  if(T.art){
+    const im = document.createElement("img"); im.src = T.art; im.alt = "";
+    inner.appendChild(im);
+    const big = document.createElement("img"); big.src = T.art; big.alt = "";
+    takoBig.appendChild(big);
+  }else{
+    inner.textContent = T.emoji || "🐙";
+    takoBig.textContent = T.emoji || "🐙";
+  }
+  takoBtn.addEventListener("click", ()=>{ if(!busy && !sceneOpen) openTako(); });
+
+  /* ステージ内をランダムに泳ぎ回る。
+     行き先を決めて transition で移動 → 着いたらまた次の行き先、の繰り返し */
+  const S = T.swim || {};
+  const area   = S.area || { x:[0.10,0.90], y:[0.08,0.92] };
+  const speed  = S.speed || [5, 9];     // 1回の移動にかける秒数
+  const pause  = S.pause || [200, 1400];// 着いてから次に動くまでの間(ms)
+  let swimTimer = null;
+
+  const rand = (a,b)=> a + Math.random() * (b - a);
+
+  function swimTo(){
+    const r = stage.getBoundingClientRect();
+    const x = rand(area.x[0], area.x[1]) * r.width;
+    const y = rand(area.y[0], area.y[1]) * r.height;
+    const sec = rand(speed[0], speed[1]);
+    takoBtn.style.setProperty("--swim", sec.toFixed(2) + "s");
+    takoBtn.style.transform = "translate(" + x.toFixed(0) + "px," + y.toFixed(0) + "px) translate(-50%,-50%)";
+    swimTimer = setTimeout(swimTo, sec * 1000 + rand(pause[0], pause[1]));
+  }
+
+  /* 最初の位置は瞬間移動で置いてから泳ぎ始める */
+  const r0 = stage.getBoundingClientRect();
+  takoBtn.style.transition = "none";
+  takoBtn.style.transform = "translate(" + (T.pos.x * r0.width) + "px," + (T.pos.y * r0.height) + "px) translate(-50%,-50%)";
+  requestAnimationFrame(()=>{
+    takoBtn.style.transition = "";
+    swimTo();
+  });
+
+  /* 画面の向きが変わったら現在地を作り直す */
+  addEventListener("resize", ()=>{
+    clearTimeout(swimTimer);
+    swimTo();
+  });
+})();
+
+let takoIndex = -1;
+function takoLine(){
+  const lines = (SITE.tako && SITE.tako.lines) || ["……"];
+  takoIndex = (takoIndex + 1) % lines.length;   // 押すたび順番に変わる
+  return lines[takoIndex];
+}
+
+/* 接近アニメなしで、いきなり寄りの状態から始まる */
+function openTako(){
+  busy = true;
+  sceneOpen = true;
+  advbox.classList.remove("show");
+  advText.textContent = "";
+  advCho.innerHTML = "";
+  advName.textContent = SITE.tako.name || "";
+
+  charSprite.stop();
+  stage.classList.add("is-scene","is-tako");
+
+  setTimeout(()=>{
+    advbox.classList.add("show");
+    typeLine(takoLine(), ()=>{
+      renderChoices({ choices:[ { label:"もういっかい聞く", tako:true } ] });
+      busy = false;
+    });
+  }, CONFIG.scene.fadeIcons);
+}
+
 function closeScene(){
   clearInterval(typeTimer);
   advbox.classList.remove("show");
-  stage.classList.remove("is-scene","is-bust");   // キャラが元の位置・大きさへ戻る
+  stage.classList.remove("is-scene","is-bust","is-tako");   // 元の状態へ戻る
   charSprite.play("idle", { loop:true });
   sceneOpen = false;
   busy = false;

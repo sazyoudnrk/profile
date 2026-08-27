@@ -146,10 +146,9 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 
 /* ===== トップのステージ ===== */
-#stage{position:relative;aspect-ratio:3/5;min-height:580px;overflow:hidden}
-#stage::before{ /* 淡い光 */
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 45%,rgba(126,232,250,.35),transparent 62%);
+#stage{
+  position:relative;aspect-ratio:3/5;min-height:580px;overflow:hidden;
+  background:linear-gradient(180deg,var(--yellow) 0%,#FFE9A8 26%,#FFFDF3 62%,#fff 100%);
 }
 #character{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);

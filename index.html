@@ -148,7 +148,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 /* ===== トップのステージ ===== */
 #stage{
   position:relative;aspect-ratio:3/5;min-height:580px;overflow:hidden;
-  background:linear-gradient(180deg,var(--yellow) 0%,#FFE9A8 26%,#FFFDF3 62%,#fff 100%);
+  background:linear-gradient(180deg,#FFDB80 0%,#FFF0C4 30%,#FFFDF3 66%,#fff 100%);
 }
 #character{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -371,7 +371,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 
 /* ===== ギャルゲ構図のシーン（ステージ内でそのまま展開する） ===== */
-#stage.is-scene{background:linear-gradient(180deg,#FFE9A8 0%,#FFF6DC 45%,#fff 100%)}
+#stage.is-scene{background:linear-gradient(180deg,#FFF0C4 0%,#FFFAE8 45%,#fff 100%)}
 
 /* シーンに入るとアイコンはフェードアウトして消える */
 .icon{transition:opacity .22s ease}
@@ -633,7 +633,7 @@ const SITE = {
      items に絵文字か画像パスを並べる（画像なら "assets/deco/xxx.png" のように） */
   decor: {
     items:["✨","🫧","💠","🍬","⭐️","🩵"],
-    count:10,                                  // 最初に浮かぶ数
+    count:13,                                  // 最初に浮かぶ数
     max:40,                                    // これ以上は増えない上限
     size:[16,30],                              // 大きさの範囲(px)
     area:{ x:[0.06,0.94], y:[0.05,0.95] },     // 浮かぶ範囲

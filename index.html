@@ -290,6 +290,34 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   font-size:11px;letter-spacing:.18em;color:#fff;opacity:.9;
   text-shadow:0 1px 2px rgba(26,47,110,.4)}
 
+/* ===== 浮かぶ装飾アイテム ===== */
+.decor{
+  position:absolute;z-index:2;
+  transform:translate(-50%,-50%);
+  padding:6px;line-height:1;
+  touch-action:manipulation;
+  transition:opacity .35s ease, transform .35s cubic-bezier(.3,1.4,.5,1);
+}
+.decor-in{
+  display:block;line-height:1;
+  font-size:var(--size,22px);
+  animation:floaty var(--dur,5s) ease-in-out var(--delay,0s) infinite;
+}
+.decor img{width:var(--size,22px);height:var(--size,22px);object-fit:contain}
+.decor.is-gone{opacity:0;pointer-events:none}
+
+/* 湧いてくるときはふわっと現れる */
+.decor.born{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+
+/* 触ると弾けて消える */
+.decor.pop{pointer-events:none;animation:decorPop .34s cubic-bezier(.3,1.4,.5,1) forwards}
+@keyframes decorPop{
+  0%  {transform:translate(-50%,-50%) scale(1);   opacity:1}
+  45% {transform:translate(-50%,-50%) scale(1.55);opacity:.85}
+  100%{transform:translate(-50%,-50%) scale(.15); opacity:0}
+}
+#stage.is-scene .decor{opacity:0;pointer-events:none}
+
 /* ===== たこたろ ===== */
 #tako{
   position:absolute;z-index:3;left:0;top:0;
@@ -331,7 +359,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 
 /* ===== ギャルゲ構図のシーン（ステージ内でそのまま展開する） ===== */
-#stage.is-scene{background:linear-gradient(180deg,#DFF6FF 0%,#EFFAFF 55%,#FFF6DC 100%)}
+#stage.is-scene{background:linear-gradient(180deg,#FFE9A8 0%,#FFF6DC 45%,#fff 100%)}
 
 /* シーンに入るとアイコンはフェードアウトして消える */
 .icon{transition:opacity .22s ease}
@@ -589,11 +617,24 @@ const SITE = {
     // 3列グリッド。増やすと自動で段が増えます
   ],
 
+  /* キャラの周りに浮かぶ装飾。触ると弾けて消えます。
+     items に絵文字か画像パスを並べる（画像なら "assets/deco/xxx.png" のように） */
+  decor: {
+    items:["✨","🫧","💠","🍬","⭐️","🩵"],
+    count:10,                                  // 最初に浮かぶ数
+    max:40,                                    // これ以上は増えない上限
+    size:[16,30],                              // 大きさの範囲(px)
+    area:{ x:[0.06,0.94], y:[0.05,0.95] },     // 浮かぶ範囲
+    respawnCount:[1,3],                        // ひとつ割ると何個湧くか
+    respawnDelay:[400,2200]                    // 湧くまでの時間(ms)
+  },
+
   /* たこたろ。キャラの近くを漂う。art に画像パスを入れると絵文字から差し替わります */
   tako: {
     name:"たこたろ",
     emoji:"🐙",
     art:"assets/char/tako.png",
+    url:"https://x.com/sazyou_tako",   // たこたろのTwitter
     pos:{ x:0.72, y:0.30 },    // 最初に現れる位置（幅・高さに対する比率）
     /* ステージ内を泳ぎ回る設定
        area  : 動き回れる範囲   speed : 1回の移動にかける秒数
@@ -601,7 +642,7 @@ const SITE = {
     swim:{ area:{ x:[0.10,0.90], y:[0.08,0.92] }, speed:[5,9], pause:[200,1400] },
     lines:[
       "飼われてるたこ",
-      "たこたろのつぶやき"
+      "ポリエステルたこ"
     ]
   },
 
@@ -1055,6 +1096,67 @@ function renderChoices(sc){
   });
 }
 
+/* ---- 浮かぶ装飾アイテム ---- */
+(function setupDecor(){
+  const D = SITE.decor;
+  if(!D || !D.items || !D.items.length) return;
+  const rnd  = (a,b)=> a + Math.random() * (b - a);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  let alive = 0;
+
+  function makeDecor(){
+    if(alive >= D.max) return;
+    alive++;
+
+    const el = document.createElement("button");
+    el.className = "decor";
+    el.setAttribute("aria-hidden","true");
+    el.tabIndex = -1;
+    const inner = document.createElement("span");
+    inner.className = "decor-in";
+    el.appendChild(inner);
+
+    const src  = pick(D.items);
+    const size = rnd(D.size[0], D.size[1]);
+    el.style.left = (rnd(D.area.x[0], D.area.x[1]) * 100) + "%";
+    el.style.top  = (rnd(D.area.y[0], D.area.y[1]) * 100) + "%";
+    el.style.setProperty("--size",  size.toFixed(0) + "px");
+    el.style.setProperty("--dur",   rnd(3.2, 6.4).toFixed(2) + "s");
+    el.style.setProperty("--delay", (-rnd(0, 6)).toFixed(2) + "s");
+    el.style.setProperty("--dx",    rnd(-7, 7).toFixed(1) + "px");
+    el.style.setProperty("--dy",    rnd(5, 12).toFixed(1) + "px");
+
+    if(/\.(png|gif|jpe?g|webp|svg)$/i.test(src)){
+      const im = document.createElement("img"); im.src = src; im.alt = "";
+      inner.appendChild(im);
+    }else{
+      inner.textContent = src;
+    }
+
+    /* 生まれるときはふわっと出す */
+    el.classList.add("born");
+    stage.appendChild(el);
+    requestAnimationFrame(()=>el.classList.remove("born"));
+
+    el.addEventListener("click", ev=>{
+      ev.stopPropagation();
+      if(el.classList.contains("pop")) return;
+      el.classList.add("pop");
+      setTimeout(()=>{
+        el.remove();
+        alive--;
+        /* 割ったぶんより多く湧いてくる */
+        const n = Math.round(rnd(D.respawnCount[0], D.respawnCount[1]));
+        for(let i = 0; i < n; i++){
+          setTimeout(makeDecor, rnd(D.respawnDelay[0], D.respawnDelay[1]));
+        }
+      }, 340);
+    });
+  }
+
+  for(let i = 0; i < D.count; i++) makeDecor();
+})();
+
 /* ---- たこたろ ---- */
 const takoBtn = $("#tako");
 const takoBig = $("#takoBig");
@@ -1133,7 +1235,9 @@ function openTako(){
   setTimeout(()=>{
     advbox.classList.add("show");
     typeLine(takoLine(), ()=>{
-      renderChoices({ choices:[ { label:"もういっかい聞く", tako:true } ] });
+      renderChoices({ choices:[
+        { label:"たこたろのつぶやきを見る", url:SITE.tako.url }
+      ] });
       busy = false;
     });
   }, CONFIG.scene.fadeIcons);

@@ -317,7 +317,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   transition:opacity .35s ease, transform .35s cubic-bezier(.3,1.4,.5,1);
 }
 .decor-in{
-  display:block;line-height:1;
+  display:block;line-height:1;opacity:var(--alpha,1);
   font-size:var(--size,22px);
   animation:floaty var(--dur,5s) ease-in-out var(--delay,0s) infinite;
 }
@@ -617,7 +617,7 @@ const SITE = {
     ],
     count:26,                                  // 最初に浮かぶ数
     max:80,                                    // これ以上は増えない上限
-    size:[33,66],                              // 大きさの範囲(px)
+    size:[18,78],                              // 大きさの範囲(px)。幅が広いほどバラつく
     area:{ x:[0.06,0.94], y:[0.05,0.95] },     // 浮かぶ範囲
     respawnCount:[1,3],                        // ひとつ割ると何個湧くか
     respawnDelay:[400,2200]                    // 湧くまでの時間(ms)
@@ -1142,6 +1142,9 @@ function renderChoices(sc){
     el.style.left = (rnd(D.area.x[0], D.area.x[1]) * 100) + "%";
     el.style.top  = (rnd(D.area.y[0], D.area.y[1]) * 100) + "%";
     el.style.setProperty("--size",  size.toFixed(0) + "px");
+    /* 小さいものほど薄くして奥行きを出す */
+    const t = (size - D.size[0]) / (D.size[1] - D.size[0]);
+    el.style.setProperty("--alpha", (0.45 + t * 0.55).toFixed(2));
     el.style.setProperty("--dur",   rnd(3.2, 6.4).toFixed(2) + "s");
     el.style.setProperty("--delay", (-rnd(0, 6)).toFixed(2) + "s");
     el.style.setProperty("--dx",    rnd(-7, 7).toFixed(1) + "px");

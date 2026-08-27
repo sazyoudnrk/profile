@@ -317,12 +317,13 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 /* 寄りの表示（接近アニメなしでいきなりこの状態になる） */
 #takoBig{
   position:absolute;left:50%;top:52%;z-index:1;
+  width:70%;                       /* 画像の場合の寄りサイズ */
   transform:translate(-50%,-50%);
   font-size:190px;line-height:1;text-align:center;
   opacity:0;pointer-events:none;
   transition:opacity .28s ease,transform .28s cubic-bezier(.3,.9,.4,1);
 }
-#takoBig img{width:min(72%,300px);margin:0 auto}
+#takoBig img{width:100%;height:auto;display:block}
 #stage.is-tako #takoBig{opacity:1;animation:takoBob 2.6s ease-in-out infinite}
 #stage.is-tako #character{opacity:0}
 @keyframes takoBob{
@@ -593,7 +594,7 @@ const SITE = {
   tako: {
     name:"たこたろ",
     emoji:"🐙",
-    art:"",                    // 例: "assets/char/tako.png"
+    art:"assets/char/tako.png",
     pos:{ x:0.72, y:0.30 },    // 最初に現れる位置（幅・高さに対する比率）
     /* ステージ内を泳ぎ回る設定
        area  : 動き回れる範囲   speed : 1回の移動にかける秒数

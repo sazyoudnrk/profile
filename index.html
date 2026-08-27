@@ -153,10 +153,22 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 #character{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   touch-action:manipulation;z-index:1;
-  /* 横幅は CONFIG.charWidthRatio (JS側) で指定 */
   transition:width .55s cubic-bezier(.3,.9,.4,1), top .55s cubic-bezier(.3,.9,.4,1), opacity .25s ease;
 }
 /* シーン中はキャラが手前に寄る（幅と位置は JS が --scene-w / --scene-top で渡す） */
+/* 本体はアイコンよりゆっくり、大きめにふわーっと漂う */
+#character .sprite{
+  animation:charFloat 7.5s ease-in-out infinite;
+  will-change:transform;
+}
+@keyframes charFloat{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  30%    {transform:translate(3px,-11px) rotate(.6deg)}
+  60%    {transform:translate(-3px,-5px) rotate(-.5deg)}
+}
+/* 接近後はもう少し控えめに揺れる */
+#stage.is-scene #character .sprite{animation-duration:5.5s}
+
 #stage.is-scene #character{
   width:var(--scene-w) !important;
   top:var(--scene-top);
@@ -292,7 +304,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 /* ===== 浮かぶ装飾アイテム ===== */
 .decor{
-  position:absolute;z-index:2;
+  position:absolute;z-index:0;   /* キャラ(1)・アイコン(2)より奥 */
   transform:translate(-50%,-50%);
   padding:6px;line-height:1;
   touch-action:manipulation;

@@ -246,6 +246,12 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 .app-item .body{padding:7px 7px 9px}
 .app-item .t{display:block;font-size:12px;font-weight:700;line-height:1.25}
+.app-item .wip{
+  display:inline-block;margin-top:3px;
+  font-size:9px;font-weight:700;letter-spacing:.02em;
+  background:var(--yellow);border:1.5px solid var(--navy);border-radius:6px;
+  padding:0 5px;
+}
 .app-item .n{display:block;font-size:9.5px;line-height:1.35;color:var(--navy);opacity:.65;margin-top:3px}
 .link-list{list-style:none;display:flex;flex-direction:column;gap:9px}
 .link-item{
@@ -510,11 +516,11 @@ const SITE = {
 
   /* ウェブアプリ一覧。thumb は省略可（省略時は頭文字が表示されます） */
   apps: [
-    { label:"クソ俳句同好会", note:"匿名でクソ俳句を詠もう！",          url:"https://sazyoudnrk.github.io/shitty-haiku-club/", thumb:"" },
-    { label:"STICKER LAB",  note:"ステッカーデジタルシミュレータ",      url:"https://sazyoudnrk.github.io/imagistick-lab/",    thumb:"" },
-    { label:"Acrylayer",    note:"多層アクリル印刷シミュレータ",        url:"https://sazyoudnrk.github.io/Acrylayer/",         thumb:"" },
-    { label:"Fruitopia",    note:"ビルドで高得点！フルーツ3マッチパズル", url:"https://sazyoudnrk.github.io/Fruitopia/",         thumb:"" },
-    { label:"Color Cage",   note:"ランダムカラーパレットでお絵描き！",   url:"https://sazyoudnrk.github.io/color-cage/",        thumb:"" }
+    { label:"クソ俳句同好会",        note:"匿名でクソ俳句を詠もう！",          url:"https://sazyoudnrk.github.io/shitty-haiku-club/", thumb:"" },
+    { label:"Color Cage",          note:"ランダムカラーパレットでお絵描き！",   url:"https://sazyoudnrk.github.io/color-cage/",        thumb:"" },
+    { label:"Acrylayer（開発中）",   note:"多層アクリル印刷シミュレータ",        url:"https://sazyoudnrk.github.io/Acrylayer/",         thumb:"" },
+    { label:"Fruitopia（開発中）",   note:"ビルドで高得点！フルーツ3マッチパズル", url:"https://sazyoudnrk.github.io/Fruitopia/",         thumb:"" },
+    { label:"STICKER LAB（開発中）", note:"ステッカーデジタルシミュレータ",      url:"https://sazyoudnrk.github.io/imagistick-lab/",    thumb:"" }
     // 3列グリッド。増やすと自動で段が増えます
   ],
 
@@ -817,9 +823,16 @@ const appList = $("#appList");
 
   const body = document.createElement("div");
   body.className = "body";
-  const t = document.createElement("span"); t.className = "t"; t.textContent = a.label;
+  const t = document.createElement("span"); t.className = "t";
+  const wip = /（開発中）$/.test(a.label);
+  t.textContent = a.label.replace(/（開発中）$/, "");
+  body.appendChild(t);
+  if(wip){
+    const w = document.createElement("span"); w.className = "wip"; w.textContent = "開発中";
+    body.appendChild(w);
+  }
   const n = document.createElement("span"); n.className = "n"; n.textContent = a.note || "";
-  body.append(t, n);
+  body.appendChild(n);
 
   b.append(thumb, body);
   b.addEventListener("click", ()=>goto(a.url));

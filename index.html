@@ -429,9 +429,24 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   animation:blink .7s steps(2,end) infinite;vertical-align:middle;
 }
 @keyframes blink{50%{opacity:0}}
-.choices{display:flex;flex-direction:column;gap:7px;margin-top:12px;
-  max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.choices:empty{margin-top:0}
+.choices{
+  display:flex;flex-direction:column;gap:7px;
+  margin-top:0;max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .34s cubic-bezier(.3,.9,.4,1),
+             margin-top .34s cubic-bezier(.3,.9,.4,1),
+             opacity .24s ease;
+}
+/* セリフを読み終えたら、テキストをすーっと押し上げながら選択肢が現れる */
+.choices.show{
+  margin-top:12px;max-height:34vh;opacity:1;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.choices.show .choice{
+  opacity:0;
+  animation:choiceIn .3s ease forwards;
+  animation-delay:calc(var(--i,0) * 80ms + 120ms);
+}
+@keyframes choiceIn{ to{opacity:1} }
 .choice{
   width:100%;padding:9px 10px;
   display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;
@@ -1000,7 +1015,7 @@ const list = $("#linkList");
 
 function linkButton(l){
   const b = document.createElement("button");
-  const long = (l.note || "").length > 18;   // 説明が長いものは縦積み表示
+  const long = (l.note || "").length > 30;   // 説明が長いものは縦積み表示
   b.className = "link-item" + (l.badge ? " has-badge" : "") + (long ? " is-long" : "");
   b.innerHTML = '<span class="l"><span class="t"></span></span><span class="n"></span>';
   b.querySelector(".t").textContent = l.label;
@@ -1050,7 +1065,7 @@ function openScene(key){
 
   advbox.classList.remove("show");
   advText.textContent = "";
-  advCho.innerHTML = "";
+  clearChoices();
   advName.textContent = sc.name || "";
 
   /* まずアイコンをフェードアウト。消えきってから接近アニメを始める */
@@ -1100,13 +1115,18 @@ function switchScene(key){
   busy = true;
   advName.textContent = sc.name || "";
   advText.textContent = "";
-  advCho.innerHTML = "";
+  clearChoices();
   typeLine(sc.text, ()=>{ renderChoices(sc); busy = false; });
 }
 
-function renderChoices(sc){
+function clearChoices(){
   advCho.innerHTML = "";
-  (sc.choices || []).forEach(c=>{
+  advCho.classList.remove("show");
+}
+
+function renderChoices(sc){
+  clearChoices();
+  (sc.choices || []).forEach((c,i)=>{
     const b = document.createElement("button");
     const pending = !c.scene && !c.url && !c.tako;   // リンク先がまだ空のもの
     b.className = "choice" + (c.sub ? " sub" : "") + (pending ? " pending" : "");
@@ -1130,8 +1150,11 @@ function renderChoices(sc){
       else if(c.scene){ switchScene(c.scene); }   // 近づき直さずセリフだけ切り替え
       else goto(c.url);
     });
+    b.style.setProperty("--i", i);
     advCho.appendChild(b);
   });
+  /* 高さのトランジションを効かせるため、追加した次のフレームで開く */
+  requestAnimationFrame(()=>advCho.classList.add("show"));
 }
 
 /* ---- 浮かぶ装飾アイテム ---- */
@@ -1264,7 +1287,7 @@ function openTako(){
   sceneOpen = true;
   advbox.classList.remove("show");
   advText.textContent = "";
-  advCho.innerHTML = "";
+  clearChoices();
   advName.textContent = SITE.tako.name || "";
 
   charSprite.stop();

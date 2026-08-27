@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#00A9E0">
 <meta name="color-scheme" content="light">
 <style>:root{color-scheme:light}</style>
-<title>砂上電力</title>
+<title>sazyoden profile</title>
 <style>
 :root{
   --navy:#1A2F6E;
@@ -118,12 +118,18 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   padding:11px 12px;background:var(--sky-pale);
 }
 .ev-date{
-  flex:none;min-width:52px;text-align:center;
+  flex:none;min-width:56px;text-align:center;
   background:var(--yellow);border:2px solid var(--navy);border-radius:9px;
   padding:4px 5px;
 }
-.ev-date .m{display:block;font-family:var(--label);font-size:16px;font-weight:800;line-height:1}
-.ev-date .d{display:block;font-size:9px;font-weight:700;margin-top:2px}
+.ev-date .y{display:block;font-family:var(--label);font-size:9px;font-weight:700;line-height:1;opacity:.8}
+.ev-date .m{display:block;font-family:var(--label);font-size:16px;font-weight:800;line-height:1;margin-top:2px}
+.ev-date .d{display:block;font-size:9px;font-weight:700;margin-top:1px}
+
+/* 過去のイベントは控えめに */
+.ev-item.is-past{background:#fff;opacity:.6}
+.ev-item.is-past .ev-date{background:#fff}
+.ev-past-head{margin-top:20px}
 .ev-body .t{display:block;font-size:14px;font-weight:700;line-height:1.3}
 .ev-body .v{display:block;font-size:11px;margin-top:3px;opacity:.75}
 .ev-body .s{
@@ -216,7 +222,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   text-transform:none;color:var(--navy);opacity:.65;margin-top:2px}
 
 /* ウェブアプリ一覧 */
-.app-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.app-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:stretch}
 .app-item{
   display:flex;flex-direction:column;gap:0;
   border:2px solid var(--navy);
@@ -240,7 +246,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 }
 .app-item .body{padding:7px 7px 9px}
 .app-item .t{display:block;font-size:12px;font-weight:700;line-height:1.25}
-.app-item .n{display:block;font-size:10px;line-height:1.3;color:var(--navy);opacity:.6;margin-top:2px}
+.app-item .n{display:block;font-size:9.5px;line-height:1.35;color:var(--navy);opacity:.65;margin-top:3px}
 .link-list{list-style:none;display:flex;flex-direction:column;gap:9px}
 .link-item{
   display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
@@ -384,6 +390,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
     <button class="ev-close" id="eventClose" aria-label="閉じる">×</button>
     <h3>EVENT<span>イベント参加予定</span></h3>
     <ul class="ev-list" id="eventList"></ul>
+    <h3 class="ev-past-head">PAST<span>過去の参加イベント</span></h3>
+    <ul class="ev-list" id="eventPastList"></ul>
   </div>
 </div>
 
@@ -470,7 +478,7 @@ const CONFIG = {
 };
 
 const SITE = {
-  name: "SAZYOU <b>DENRYOKU</b>",
+  name: "SAZYODEN <b>PROFILE</b>",
   credit: "ILLUSTRATION & CODE — @sazyou_dnrk",
 
   character: {
@@ -502,18 +510,17 @@ const SITE = {
 
   /* ウェブアプリ一覧。thumb は省略可（省略時は頭文字が表示されます） */
   apps: [
-    { label:"Acrylayer",  note:"アクキー3Dプレビュー", url:"https://sazyoudnrk.github.io/Acrylayer/", thumb:"" },
-    { label:"Fruitopia",  note:"果樹園ビルドパズル",   url:"https://sazyoudnrk.github.io/Fruitopia/", thumb:"" },
-    { label:"Color Cage", note:"ランダム配色でお絵かき", url:"https://sazyoudnrk.github.io/color-cage/", thumb:"" },
-    { label:"STICKER LAB", note:"3Dステッカー質感シミュレータ", url:"https://sazyoudnrk.github.io/imagistick-lab/", thumb:"" },
-    { label:"クソ俳句同好会", note:"匿名で俳句を投稿する場所", url:"https://sazyoudnrk.github.io/shitty-haiku-club/", thumb:"" }
+    { label:"クソ俳句同好会", note:"匿名でクソ俳句を詠もう！",          url:"https://sazyoudnrk.github.io/shitty-haiku-club/", thumb:"" },
+    { label:"STICKER LAB",  note:"ステッカーデジタルシミュレータ",      url:"https://sazyoudnrk.github.io/imagistick-lab/",    thumb:"" },
+    { label:"Acrylayer",    note:"多層アクリル印刷シミュレータ",        url:"https://sazyoudnrk.github.io/Acrylayer/",         thumb:"" },
+    { label:"Fruitopia",    note:"ビルドで高得点！フルーツ3マッチパズル", url:"https://sazyoudnrk.github.io/Fruitopia/",         thumb:"" },
+    { label:"Color Cage",   note:"ランダムカラーパレットでお絵描き！",   url:"https://sazyoudnrk.github.io/color-cage/",        thumb:"" }
     // 3列グリッド。増やすと自動で段が増えます
   ],
 
-  /* イベント参加予定。日付を過ぎたものは自動で非表示になります */
+  /* イベント参加予定。日付を過ぎたものは自動で「過去の参加イベント」へ移動します */
   events: [
-    { date:"2026-09-13", title:"COMITIA", venue:"東京ビッグサイト", space:"", note:"" },
-    { date:"2026-11-23", title:"コミティア", venue:"東京ビッグサイト", space:"", note:"" }
+    { date:"2026-12-13", title:"COMITIA158", venue:"東京ビッグサイト 東1・2・3・7・8ホール", space:"", note:"" }
   ],
 
   otherLinks: [
@@ -918,48 +925,60 @@ addEventListener("keydown", e=>{ if(e.key === "Escape" && sceneOpen) closeScene(
 /* ---- イベント参加予定 ---- */
 const eventModal = $("#eventModal");
 const eventList  = $("#eventList");
+const eventPast  = $("#eventPastList");
 const WEEK = ["日","月","火","水","木","金","土"];
+
+/* 1件ぶんの<li>を組み立てる */
+function eventItem(e, past){
+  const li = document.createElement("li");
+  li.className = "ev-item" + (past ? " is-past" : "");
+
+  const date = document.createElement("div");
+  date.className = "ev-date";
+  const y = document.createElement("span"); y.className = "y";
+  y.textContent = e._d.getFullYear();
+  const m = document.createElement("span"); m.className = "m";
+  m.textContent = (e._d.getMonth()+1) + "/" + e._d.getDate();
+  const d = document.createElement("span"); d.className = "d";
+  d.textContent = "(" + WEEK[e._d.getDay()] + ")";
+  date.append(y, m, d);
+
+  const body = document.createElement("div");
+  body.className = "ev-body";
+  const t = document.createElement("span"); t.className = "t"; t.textContent = e.title;
+  body.appendChild(t);
+  if(e.venue){ const v = document.createElement("span"); v.className = "v"; v.textContent = e.venue; body.appendChild(v); }
+  if(e.note){ const n = document.createElement("span"); n.className = "v"; n.textContent = e.note; body.appendChild(n); }
+  if(e.space){ const sp = document.createElement("span"); sp.className = "s"; sp.textContent = e.space; body.appendChild(sp); }
+
+  li.append(date, body);
+  return li;
+}
+
+function emptyItem(text){
+  const p = document.createElement("li");
+  p.className = "ev-empty";
+  p.textContent = text;
+  return p;
+}
 
 function renderEvents(){
   eventList.innerHTML = "";
+  eventPast.innerHTML = "";
   const today = new Date(); today.setHours(0,0,0,0);
 
-  const upcoming = (SITE.events || [])
+  const all = (SITE.events || [])
     .map(e => ({ ...e, _d: new Date(e.date + "T00:00:00") }))
-    .filter(e => !isNaN(e._d) && e._d >= today)
-    .sort((a,b) => a._d - b._d);
+    .filter(e => !isNaN(e._d));
 
-  if(!upcoming.length){
-    const p = document.createElement("li");
-    p.className = "ev-empty";
-    p.textContent = "いまのところ参加予定はないよ。決まったらここに出るね。";
-    eventList.appendChild(p);
-    return;
-  }
+  const upcoming = all.filter(e => e._d >= today).sort((a,b) => a._d - b._d);
+  const past     = all.filter(e => e._d <  today).sort((a,b) => b._d - a._d);
 
-  upcoming.forEach(e=>{
-    const li = document.createElement("li");
-    li.className = "ev-item";
+  if(upcoming.length) upcoming.forEach(e => eventList.appendChild(eventItem(e, false)));
+  else eventList.appendChild(emptyItem("いまのところ参加予定はないよ。決まったらここに出るね。"));
 
-    const date = document.createElement("div");
-    date.className = "ev-date";
-    const m = document.createElement("span"); m.className = "m";
-    m.textContent = (e._d.getMonth()+1) + "/" + e._d.getDate();
-    const d = document.createElement("span"); d.className = "d";
-    d.textContent = "(" + WEEK[e._d.getDay()] + ")";
-    date.append(m, d);
-
-    const body = document.createElement("div");
-    body.className = "ev-body";
-    const t = document.createElement("span"); t.className = "t"; t.textContent = e.title;
-    body.appendChild(t);
-    if(e.venue){ const v = document.createElement("span"); v.className = "v"; v.textContent = e.venue; body.appendChild(v); }
-    if(e.note){ const n = document.createElement("span"); n.className = "v"; n.textContent = e.note; body.appendChild(n); }
-    if(e.space){ const sp = document.createElement("span"); sp.className = "s"; sp.textContent = e.space; body.appendChild(sp); }
-
-    li.append(date, body);
-    eventList.appendChild(li);
-  });
+  if(past.length) past.forEach(e => eventPast.appendChild(eventItem(e, true)));
+  else eventPast.appendChild(emptyItem("まだないよ。"));
 }
 
 $("#eventBtn").addEventListener("click", ()=>{

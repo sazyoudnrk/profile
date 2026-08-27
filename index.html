@@ -529,50 +529,6 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 <script>
 /* =======================================================================
-   仮素材ジェネレーター（自分の絵に差し替えたら、この <script> ごと削除OK）
-   ======================================================================= */
-window.PH = (function(){
-  const N="#1A2F6E", S="#7EE8FA", Y="#FFB800";
-  const svg=(inner,w,h)=>"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+w+' '+h+'">'+inner+'</svg>');
-
-  /* 全身。eye:0=開 1=閉, arm:腕の振り, mouth:0=閉 1=開 */
-  function figure(eye,arm,mouth){
-    return ''+
-    '<g fill="none" stroke="'+N+'" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">'+
-      '<path d="M70 132 L100 118 L130 132 L136 210 L64 210 Z" fill="'+S+'" fill-opacity=".45"/>'+
-      '<path d="M70 136 l-16 '+(46+arm)+'" /><path d="M130 136 l16 '+(46-arm)+'" />'+
-      '<path d="M84 210 l-4 62" /><path d="M116 210 l4 62" />'+
-      '<circle cx="100" cy="72" r="40" fill="#fff"/>'+
-      '<path d="M62 66q6-40 38-40t38 40" fill="'+S+'" fill-opacity=".7"/>'+
-      '<path d="M100 112 v8"/>'+
-      (eye
-        ? '<path d="M78 76q6 5 12 0"/><path d="M110 76q6 5 12 0"/>'
-        : '<ellipse cx="84" cy="76" rx="5.5" ry="9" fill="'+N+'"/><ellipse cx="116" cy="76" rx="5.5" ry="9" fill="'+N+'"/>')+
-      (mouth
-        ? '<path d="M94 94q6 9 12 0q-6 4-12 0z" fill="'+N+'"/>'
-        : '<path d="M95 94q5 4 10 0"/>')+
-      '<circle cx="74" cy="90" r="4.5" fill="'+Y+'" stroke="none" opacity=".8"/>'+
-      '<circle cx="126" cy="90" r="4.5" fill="'+Y+'" stroke="none" opacity=".8"/>'+
-    '</g>';
-  }
-
-  /* 拡大率と位置を変えて「近づく」を表現 */
-  function shot(scale,cy,eye,arm,mouth){
-    return svg('<g transform="translate(100 '+cy+') scale('+scale+') translate(-100 -72)">'
-      + figure(eye,arm,mouth) + '</g>', 200, 300);
-  }
-
-  return {
-    idle:  i => shot(0.78, 96, 0, [10,-4,4][i], 0),          // トップの待機3コマ
-    walk:  i => [shot(0.7,90,0,12,0), shot(1.15,120,0,-6,0), shot(1.9,168,0,2,1)][i], // 近づく3コマ
-    bust:  i => shot(1.9, 168, [0,1,0][i], 2, [1,0,1][i]),   // 近づいた後の待機ループ
-    icon:  t => svg('<rect x="14" y="14" width="72" height="72" rx="16" fill="'+S+'" fill-opacity=".2" stroke="'+N+'" stroke-width="4"/>'+
-      '<text x="50" y="58" font-family="Helvetica,Arial" font-size="'+(t.length>4?13:17)+'" font-weight="bold" fill="'+N+'" text-anchor="middle">'+t+'</text>',100,100)
-  };
-})();
-
-/* =======================================================================
    ここから下の SITE を編集すれば中身を差し替えられます。
 
    画像は 相対パス "img/xxx.png" でも データURI "data:image/png;base64,..." でもOK。
@@ -634,10 +590,10 @@ const SITE = {
     { id:"home",    label:"HOME PAGE", art:"assets/icon/homepage.png", caption:false,  action:{ type:"scene", scene:"home" } },
     { id:"skeb",    label:"skeb",      art:"assets/icon/skeb.png", caption:false,  action:{ type:"scene", scene:"skeb" } },
     { id:"youtube", label:"YouTube",   art:"assets/icon/youtube.png", caption:false,  action:{ type:"scene", scene:"youtube" } },
-    { id:"mail",    label:"mail",      art:PH.icon("MAIL"),  action:{ type:"link",  url:"mailto:sazyou.dnrk@example.com" } },
-    { id:"booth",   label:"BOOTH",     art:PH.icon("BOOTH"), action:{ type:"scene", scene:"booth" } },
-    { id:"order",   label:"依頼について", art:PH.icon("ORDER"), action:{ type:"scene", scene:"commission" } },
-    { id:"marshmallow", label:"マシュマロ", art:PH.icon("MARO"), action:{ type:"scene", scene:"marshmallow" } }
+    { id:"mail",    label:"mail",      art:"assets/icon/mail.PNG", caption:false,  action:{ type:"link",  url:"mailto:sazyoden@gmail.com" } },
+    { id:"booth",   label:"BOOTH",     art:"assets/icon/booth.PNG", caption:false, action:{ type:"scene", scene:"booth" } },
+    { id:"order",   label:"依頼について", art:"assets/icon/order.PNG", caption:false, action:{ type:"scene", scene:"commission" } },
+    { id:"marshmallow", label:"マシュマロ", art:"assets/icon/marshmallow.PNG", caption:false, action:{ type:"scene", scene:"marshmallow" } }
     // 8個は上限目安。これ以上増える分は「他のリンク」欄に流すのがおすすめ
   ],
 
@@ -719,7 +675,7 @@ const SITE = {
       text:"私のことがしりたいの？",
       choices:[
         { label:"質問する",             scene:"questions" },
-        { label:"他のキャラクターを見る", url:"https://example.com/characters", sub:true }
+        { label:"他のキャラクターを見る", url:"https://nanashie.wixsite.com/sazyou/character", sub:true }
       ]
     },
     home: {

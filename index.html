@@ -234,6 +234,22 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 
 /* ウェブアプリ一覧 */
 .app-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:stretch}
+
+/* 2段目以降は「他のものも見る」を押すまで隠す */
+.app-item.is-extra{display:none}
+.app-grid.is-open .app-item.is-extra{display:flex;animation:appIn .3s ease backwards}
+@keyframes appIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.app-more{
+  display:block;width:100%;margin-top:10px;
+  padding:9px 10px;
+  border:2px dashed var(--navy);border-radius:12px 10px 13px 11px;
+  background:#fff;color:var(--navy);
+  font-size:12px;font-weight:700;letter-spacing:.02em;
+  transition:background .12s ease;
+}
+.app-more:active{background:var(--sky)}
+.app-more[hidden]{display:none}
 .app-item{
   display:flex;flex-direction:column;gap:0;
   border:2px solid var(--navy);
@@ -508,6 +524,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
   <section class="card" id="apps">
     <h2>WEB APPS<span>つくったもの</span></h2>
     <div class="app-grid" id="appList"></div>
+    <button class="app-more" id="appMore" hidden></button>
   </section>
   <section class="card" id="links">
     <h2>OTHER LINKS<span>他のリンク</span></h2>
@@ -934,9 +951,12 @@ SITE.icons.forEach((icon,i)=>{
 
 /* ---- ウェブアプリ一覧 ---- */
 const appList = $("#appList");
-(SITE.apps || []).forEach(a=>{
+const appMore = $("#appMore");
+const APP_VISIBLE = 3;          // 最初に見せる数（1段ぶん）
+
+(SITE.apps || []).forEach((a,idx)=>{
   const b = document.createElement("button");
-  b.className = "app-item";
+  b.className = "app-item" + (idx >= APP_VISIBLE ? " is-extra" : "");
   b.setAttribute("aria-label", a.label);
 
   const thumb = document.createElement("div");
@@ -969,6 +989,18 @@ const appList = $("#appList");
   b.addEventListener("click", ()=>goto(a.url));
   appList.appendChild(b);
 });
+
+/* 4つ目以降は「他のものも見る」で開く */
+(function setupAppMore(){
+  const hidden = (SITE.apps || []).length - APP_VISIBLE;
+  if(hidden <= 0) return;
+  appMore.hidden = false;
+  appMore.textContent = "他のものも見る（あと" + hidden + "個）";
+  appMore.addEventListener("click", ()=>{
+    const open = appList.classList.toggle("is-open");
+    appMore.textContent = open ? "とじる" : "他のものも見る（あと" + hidden + "個）";
+  });
+})();
 
 /* ---- 他のリンク（カテゴリごとに見出しを出す） ---- */
 const list = $("#linkList");
